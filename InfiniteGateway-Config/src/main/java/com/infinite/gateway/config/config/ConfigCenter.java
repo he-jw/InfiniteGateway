@@ -17,4 +17,6 @@ public class ConfigCenter {
 
     private String address = CONFIG_CENTER_DEFAULT_ADDRESS; // 配置中心地址
 
+    private NacosConfig nacosConfig = new NacosConfig();
+
 }

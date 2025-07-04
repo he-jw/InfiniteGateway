@@ -2,7 +2,7 @@ package com.infinite.gateway.common.constant;
 
 public interface ConfigConstant {
 
-    String CONFIG_PATH = "gateway.yaml"; // 配置文件名称
+    String CONFIG_PATH = "application.yaml"; // 配置文件名称
 
     String CONFIG_PREFIX = "infinite.gateway"; // 配置前缀
 

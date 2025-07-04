@@ -3,9 +3,7 @@ package com.infinite.gateway.config.config;
 
 import lombok.Data;
 
-import static com.infinite.gateway.common.constant.ConfigConstant.DEFAULT_ENV;
-import static com.infinite.gateway.common.constant.ConfigConstant.DEFAULT_PORT;
-import static java.lang.constant.ConstantDescs.DEFAULT_NAME;
+import static com.infinite.gateway.common.constant.ConfigConstant.*;
 
 /**
  * 网关静态配置
@@ -13,10 +11,12 @@ import static java.lang.constant.ConstantDescs.DEFAULT_NAME;
 @Data
 public class Config {
 
-    // base
-    private String name = DEFAULT_NAME; // 服务名称
-    private int port = DEFAULT_PORT; // 端口
-    private String env = DEFAULT_ENV; // 环境
+    // 服务名称
+    private String name = DEFAULT_NAME;
+    // 端口
+    private int port = DEFAULT_PORT;
+    // 环境
+    private String env = DEFAULT_ENV;
 
     // 配置中心
     private ConfigCenter configCenter = new ConfigCenter();
