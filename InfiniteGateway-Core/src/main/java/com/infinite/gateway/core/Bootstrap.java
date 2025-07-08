@@ -3,7 +3,6 @@ package com.infinite.gateway.core;
 import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.config.loader.ConfigLoader;
 import com.infinite.gateway.config.manager.DynamicConfigManager;
-import com.infinite.gateway.config.pojo.RouteDefinition;
 import com.infinite.gateway.config.service.ConfigCenterProcessor;
 import com.infinite.gateway.core.config.Container;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,13 @@ import java.util.ServiceLoader;
 @Slf4j
 public class Bootstrap {
 
+    /**
+     * 静态配置
+     */
     private Config config;
+    /**
+     * 容器，负责启动核心通信组件
+     */
     private Container container;
 
     /**
@@ -35,12 +40,10 @@ public class Bootstrap {
         // 1. 加载静态配置
         config = ConfigLoader.load(args);
         // 2. 初始化配置中心（动态路由管理）
-        // 连接到配置中心
-        // 拉取初始配置
-        // 添加监听器监听路由信息变更
         initConfigCenter();
         // 3. 启动容器（核心通信组件）, 启动Netty服务端和客户端
-
+        container = new Container(config);
+        container.start();
         // 4. 初始化注册中心（服务发现）
 
         // 5. 注册优雅停机钩子

@@ -12,7 +12,7 @@ import static com.infinite.gateway.common.constant.LoadBalanceConstant.VIRTUAL_N
 import static com.infinite.gateway.common.enums.FlowEnum.TOKEN_BUCKET;
 
 @Data
-public class RouteDefinition implements Comparable<RouteDefinition>{
+public class RouteDefinition {
 
     /**
      * 路由ID,全局唯一
@@ -22,7 +22,7 @@ public class RouteDefinition implements Comparable<RouteDefinition>{
     /**
      * 后端服务ID
      */
-    private String serviceId;
+    private String serviceName;
 
     /**
      * 路径集合
@@ -38,15 +38,6 @@ public class RouteDefinition implements Comparable<RouteDefinition>{
      * 路由要走的过滤器
      */
     private Set<FilterConfig> filterConfigs = new HashSet<>();
-
-    @Override
-    public int compareTo(RouteDefinition o) {
-        int orderCompare = Integer.compare(getOrder(), o.getOrder());
-        if (orderCompare == 0) {
-            return getId().compareTo(o.getId());
-        }
-        return orderCompare;
-    }
 
 
     @Data

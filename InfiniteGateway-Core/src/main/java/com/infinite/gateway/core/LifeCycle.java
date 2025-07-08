@@ -3,11 +3,6 @@ package com.infinite.gateway.core;
 public interface LifeCycle {
 
     /**
-     * 初始化
-     */
-    void init();
-
-    /**
      * 启动
      */
     void start();

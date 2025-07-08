@@ -6,7 +6,6 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.alibaba.nacos.api.exception.NacosException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infinite.gateway.config.config.ConfigCenter;
 import com.infinite.gateway.config.config.NacosConfig;
 import com.infinite.gateway.config.pojo.RouteDefinition;
@@ -16,7 +15,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
