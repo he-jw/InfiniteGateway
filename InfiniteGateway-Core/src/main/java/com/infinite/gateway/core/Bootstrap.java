@@ -45,10 +45,16 @@ public class Bootstrap {
         container = new Container(config);
         container.start();
         // 4. 初始化注册中心（服务发现）
+        initRegisterCenter();
 
         // 5. 注册优雅停机钩子
+        //registerGracefullyShutdown();
 
         log.info("debug");
+    }
+
+    private void initRegisterCenter() {
+
     }
 
     /**
@@ -59,7 +65,6 @@ public class Bootstrap {
         ConfigCenterProcessor configCenterProcessor = ServiceLoader.load(ConfigCenterProcessor.class)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("未找到注册中心实现"));
-
         // 2.初始化配置中心客户端，把从静态yaml文件加载到的 ConfigCenterProperties 的配置传递给配置中心实现
         configCenterProcessor.init(config.getConfigCenter());
         // 3.添加监听器，订阅路由变更事件

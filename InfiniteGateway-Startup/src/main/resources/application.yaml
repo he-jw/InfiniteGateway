@@ -11,7 +11,9 @@ infinite:
         dataId: Infinite-Gateway
         group: DEFAULT_GROUP
         timeout: 5000
-
     registerCenter:
       type: NACOS
       address: 127.0.0.1:8848
+logging:
+  level:
+    root: error

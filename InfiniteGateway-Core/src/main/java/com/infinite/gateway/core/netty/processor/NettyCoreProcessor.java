@@ -9,8 +9,10 @@ import com.infinite.gateway.core.helper.RequestHelper;
 import com.infinite.gateway.core.helper.ResponseHelper;
 import com.infinite.gateway.core.request.GatewayRequest;
 import com.infinite.gateway.core.filter.FilterChainFactory;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
+import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -70,16 +72,16 @@ public class NettyCoreProcessor implements NettyProcessor {
         }
     }
 
-    // TODO
-    private void doWriteAndRelease(ChannelHandlerContext ctx, FullHttpRequest request, FullHttpResponse httpResponse) {
-
-    }
-
     /**
-     * 将处理完成的响应写回客户端
-     * @param context 网关上下文对象
+     * 发送HTTP响应并释放资源
+     * @param ctx Netty通道上下文
+     * @param request HTTP请求对象
+     * @param httpResponse HTTP响应对象
      */
-    public static void writeBackResponse(GatewayContext context) {
-
+    private void doWriteAndRelease(ChannelHandlerContext ctx, FullHttpRequest request, FullHttpResponse httpResponse) {
+        // 发送响应到客户端，并在发送完成后关闭连接
+        ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
+        // 释放请求对象占用的内存资源
+        ReferenceCountUtil.release(request);
     }
 }

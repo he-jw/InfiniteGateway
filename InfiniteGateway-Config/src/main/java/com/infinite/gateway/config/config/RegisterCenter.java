@@ -17,4 +17,6 @@ public class RegisterCenter {
 
     private String address = REGISTER_CENTER_DEFAULT_ADDRESS; // 注册中心地址
 
+    private NacosConfig nacosConfig = new NacosConfig();
+
 }

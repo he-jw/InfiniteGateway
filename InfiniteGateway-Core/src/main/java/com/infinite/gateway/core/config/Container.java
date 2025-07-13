@@ -12,19 +12,19 @@ public class Container implements LifeCycle {
     private final NettyHttpServer nettyHttpServer;
 
     public Container(Config config) {
-        this.nettyHttpClient = new NettyHttpClient();
+        this.nettyHttpClient = new NettyHttpClient(config);
         this.nettyHttpServer = new NettyHttpServer(config.getNetty(), new NettyCoreProcessor(), config);
     }
 
     @Override
     public void start() {
-        nettyHttpClient.start();
         nettyHttpServer.start();
+        nettyHttpClient.start();
     }
 
     @Override
     public void shutdown() {
-        nettyHttpClient.shutdown();
         nettyHttpServer.shutdown();
+        nettyHttpClient.shutdown();
     }
 }

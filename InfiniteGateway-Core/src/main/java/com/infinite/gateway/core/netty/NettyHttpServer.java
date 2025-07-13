@@ -7,18 +7,20 @@ import com.infinite.gateway.core.LifeCycle;
 import com.infinite.gateway.core.netty.handler.NettyHttpServerHandler;
 import com.infinite.gateway.core.netty.processor.NettyProcessor;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpServerExpectContinueHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 
@@ -26,6 +28,7 @@ import java.net.InetSocketAddress;
  * Netty HTTP服务器实现，负责接收客户端请求
  * 实现LifeCycle接口管理生命周期
  */
+@Slf4j
 public class NettyHttpServer implements LifeCycle {
 
     private Config config;
@@ -46,18 +49,15 @@ public class NettyHttpServer implements LifeCycle {
      * 初始化Netty服务端组件
      */
     private void init() {
-        // 创建ServerBootstrap实例
         this.serverBootstrap = new ServerBootstrap();
-
-        // 根据操作系统类型选择IO模型
         if (SystemUtil.useEpoll()) {
             // Linux系统使用Epoll模型
             this.eventLoopGroupBoss = new EpollEventLoopGroup(
-                    nettyConfig.getEventLoopGroupBossNum(),  // boss线程数
-                    new DefaultThreadFactory("epoll-netty-boss-nio") // 线程命名
+                    nettyConfig.getEventLoopGroupBossNum(),
+                    new DefaultThreadFactory("epoll-netty-boss-nio")
             );
             this.eventLoopGroupWorker = new EpollEventLoopGroup(
-                    nettyConfig.getEventLoopGroupWorkerNum(), // worker线程数
+                    nettyConfig.getEventLoopGroupWorkerNum(),
                     new DefaultThreadFactory("epoll-netty-worker-nio")
             );
         } else {
@@ -76,11 +76,11 @@ public class NettyHttpServer implements LifeCycle {
     /**
      * 启动Netty服务器
      */
+    @SneakyThrows(InterruptedException.class)
     @Override
     public void start() {
-        // 配置服务器参数
         serverBootstrap
-                .group(eventLoopGroupBoss, eventLoopGroupWorker)  // 设置线程组
+                .group(eventLoopGroupBoss, eventLoopGroupWorker)
                 // 选择通道类型（Epoll或NIO）
                 .channel(SystemUtil.useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                 // TCP参数配置
@@ -90,22 +90,28 @@ public class NettyHttpServer implements LifeCycle {
                 .childOption(ChannelOption.TCP_NODELAY, true)    // 禁用Nagle算法
                 .childOption(ChannelOption.SO_SNDBUF, 65535)     // 发送缓冲区大小
                 .childOption(ChannelOption.SO_RCVBUF, 65535)     // 接收缓冲区大小
-                .localAddress(new InetSocketAddress(config.getPort()))
-                .childHandler(new ChannelInitializer<>() {
+                .localAddress(new InetSocketAddress(config.getPort())) // 绑定端口
+                .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(Channel ch) {
+                    protected void initChannel(SocketChannel ch) {
                         ch.pipeline().addLast(
-                                new HttpServerCodec(),  // HTTP请求编解码器
+                                new HttpServerCodec(),
+                                new HttpServerExpectContinueHandler(),
                                 new HttpObjectAggregator(config.getNetty().getMaxContentLength()),
-                                new HttpServerExpectContinueHandler(), // 处理100 Continue请求
-                                new NettyHttpServerHandler(nettyProcessor) // 自定义业务处理器
+                                new NettyHttpServerHandler(nettyProcessor)
                         );
                     }
                 });
+        serverBootstrap.bind().sync();
+        log.info("gateway startup on port {}", this.config.getPort());
     }
 
+    /**
+     * 停止Netty服务器
+     */
     @Override
     public void shutdown() {
-
+        eventLoopGroupBoss.shutdownGracefully();
+        eventLoopGroupWorker.shutdownGracefully();
     }
 }

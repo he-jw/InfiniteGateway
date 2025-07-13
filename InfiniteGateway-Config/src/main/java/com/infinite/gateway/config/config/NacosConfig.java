@@ -28,4 +28,6 @@ public class NacosConfig {
      */
     private int timeout = NACOS_DEFAULT_TIMEOUT;
 
+    
+
 }
