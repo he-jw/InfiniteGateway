@@ -9,7 +9,7 @@ import com.alibaba.nacos.api.exception.NacosException;
 import com.infinite.gateway.config.config.ConfigCenter;
 import com.infinite.gateway.config.config.nacos.NacosConfig;
 import com.infinite.gateway.common.pojo.RouteDefinition;
-import com.infinite.gateway.config.service.ConfigCenterProcessor;
+import com.infinite.gateway.config.service.ConfigCenterService;
 import com.infinite.gateway.config.service.RoutesChangeListener;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 @Slf4j
-public class NacosConfigCenterProcessor implements ConfigCenterProcessor {
+public class NacosConfigCenterServiceImpl implements ConfigCenterService {
 
     /**
      * 配置

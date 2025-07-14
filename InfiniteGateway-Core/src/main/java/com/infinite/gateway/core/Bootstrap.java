@@ -1,15 +1,20 @@
 package com.infinite.gateway.core;
 
 import com.infinite.gateway.common.pojo.ServiceDefinition;
+import com.infinite.gateway.common.pojo.ServiceInstance;
+import com.infinite.gateway.common.util.NetUtil;
+import com.infinite.gateway.common.util.SystemUtil;
 import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.config.loader.ConfigLoader;
 import com.infinite.gateway.core.manager.DynamicConfigManager;
-import com.infinite.gateway.config.service.ConfigCenterProcessor;
+import com.infinite.gateway.config.service.ConfigCenterService;
 import com.infinite.gateway.core.netty.Container;
-import com.infinite.gateway.register.service.RegisterCenterProcessor;
+import com.infinite.gateway.register.listener.RegisterCenterListener;
+import com.infinite.gateway.register.service.RegisterCenterService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ServiceLoader;
+import java.util.Set;
 
 /**
  * 网关启动入口类，负责初始化并启动网关核心组件
@@ -21,6 +26,7 @@ public class Bootstrap {
      * 静态配置
      */
     private Config config;
+
     /**
      * 容器，负责启动核心通信组件
      */
@@ -55,15 +61,53 @@ public class Bootstrap {
         log.info("debug");
     }
 
+    /**
+     * 初始化注册中心
+     */
     private void initRegisterCenter() {
-        RegisterCenterProcessor nacosRegisterCenterProcessor = ServiceLoader.load(RegisterCenterProcessor.class)
+        RegisterCenterService nacosRegisterCenterService = ServiceLoader.load(RegisterCenterService.class)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("未找到注册中心实现"));
+        nacosRegisterCenterService.init(config);
 
-        nacosRegisterCenterProcessor.init(config);
+        ServiceDefinition serviceDefinition = buildServiceDefinition();
+        ServiceInstance serviceInstance = buildServiceInstance();
+        nacosRegisterCenterService.register(serviceDefinition, serviceInstance);
 
-        new ServiceDefinition();
-        nacosRegisterCenterProcessor.register();
+        nacosRegisterCenterService.subscribeAllServices((sd, set) -> {
+            DynamicConfigManager.getInstance().updateServiceDefinition(sd);
+            DynamicConfigManager.getInstance().updateServiceInstance(sd, set);
+        });
+
+
+    }
+
+    /**
+     * 构建服务实例
+     * @return 服务实例
+     */
+    private ServiceInstance buildServiceInstance() {
+        String ip = NetUtil.getLocalIp();
+        return ServiceInstance.builder()
+                .serviceName(config.getName())
+                .instanceId(ip + ":" + config.getPort())
+                .ip(ip)
+                .port(config.getPort())
+                .enabled(config.getRegisterCenter().isEnabled())
+                .weight(1)
+                .build();
+    }
+
+    /**
+     * 构建服务定义
+     * @return 服务定义
+     */
+    private ServiceDefinition buildServiceDefinition() {
+        return new ServiceDefinition(
+                config.getName(),
+                config.getEnv(),
+                config.getRegisterCenter().getType()
+        );
     }
 
     /**
@@ -71,16 +115,14 @@ public class Bootstrap {
      */
     private void initConfigCenter() {
         // 1.使用SPI机制加载配置中心实现（如Nacos）
-        ConfigCenterProcessor configCenterProcessor = ServiceLoader.load(ConfigCenterProcessor.class)
+        ConfigCenterService configCenterService = ServiceLoader.load(ConfigCenterService.class)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("未找到注册中心实现"));
         // 2.初始化配置中心客户端，把从静态yaml文件加载到的 ConfigCenterProperties 的配置传递给配置中心实现
-        configCenterProcessor.init(config.getConfigCenter());
+        configCenterService.init(config.getConfigCenter());
         // 3.添加监听器，订阅路由变更事件
-        configCenterProcessor.subscribeRoutesChange(newRoutes -> {
+        configCenterService.subscribeRoutesChange(newRoutes -> {
             DynamicConfigManager.getInstance().updateRoutes(newRoutes);
         });
     }
-
-
 }

@@ -10,8 +10,10 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 动态配置管理，缓存从配置中心拉取下来的配置
@@ -20,6 +22,7 @@ import java.util.regex.Pattern;
 public class DynamicConfigManager {
 
     private static final DynamicConfigManager INSTANCE = new DynamicConfigManager();
+
     private ConcurrentHashMap<String /* path */, RouteDefinition> pathRouteDefinitionMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String /* 服务名 */, ServiceDefinition> serviceDefinitionMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String /* 服务名 */, ConcurrentHashMap<String /* 实例id */, ServiceInstance>> serviceInstanceMap = new ConcurrentHashMap<>();
@@ -68,6 +71,17 @@ public class DynamicConfigManager {
 
     public ServiceDefinition getServiceDefinition(String serviceName) {
         return serviceDefinitionMap.get(serviceName);
+    }
+
+    public void updateServiceDefinition(ServiceDefinition serviceDefinition) {
+        serviceDefinitionMap.put(serviceDefinition.getServiceName(), serviceDefinition);
+    }
+
+    public void updateServiceInstance(ServiceDefinition serviceDefinition, Set<ServiceInstance> set) {
+        serviceInstanceMap.put(
+                serviceDefinition.getServiceName(),
+                new ConcurrentHashMap<>(set.stream()
+                        .collect(Collectors.toMap(ServiceInstance::getInstanceId, instance -> instance))));
     }
 
 

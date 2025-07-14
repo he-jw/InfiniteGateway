@@ -21,25 +21,21 @@ public class ServiceDefinition implements Serializable {
     /**
      * 服务名
      */
-    private String serviceName;
-
-    /**
-     * 服务是否启用
-     */
-    private boolean enabled = true;
+    private final String serviceName;
 
     /**
      * 	环境名称
      */
-    private String env;
+    private final String env;
+
+    /**
+     * 服务是否启用
+     */
+    private final boolean enabled = true;
 
     /**
      * 	服务的版本号
      */
     private String version;
-
-    public ServiceDefinition(String serviceName) {
-        this.serviceName = serviceName;
-    }
 
 }
