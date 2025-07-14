@@ -1,12 +1,14 @@
 package com.infinite.gateway.core;
 
 import com.infinite.gateway.common.pojo.ServiceDefinition;
+import com.infinite.gateway.common.pojo.ServiceInstance;
+import com.infinite.gateway.common.util.NetUtil;
 import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.config.loader.ConfigLoader;
 import com.infinite.gateway.core.manager.DynamicConfigManager;
-import com.infinite.gateway.config.service.ConfigCenterProcessor;
+import com.infinite.gateway.config.service.ConfigCenterService;
 import com.infinite.gateway.core.netty.Container;
-import com.infinite.gateway.register.service.RegisterCenterProcessor;
+import com.infinite.gateway.register.service.RegisterCenterService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ServiceLoader;
@@ -21,6 +23,7 @@ public class Bootstrap {
      * 静态配置
      */
     private Config config;
+
     /**
      * 容器，负责启动核心通信组件
      */
@@ -48,22 +51,67 @@ public class Bootstrap {
         container.start();
         // 4. 初始化注册中心（服务发现）
         initRegisterCenter();
-
         // 5. 注册优雅停机钩子
-        //registerGracefullyShutdown();
-
-        log.info("debug");
+        registerGracefullyShutdown();
     }
 
+    /**
+     * 注册JVM停机钩子，实现优雅停机
+     */
+    private void registerGracefullyShutdown() {
+        // 添加JVM关闭时的钩子，当JVM接收到终止信号（如kill命令、程序正常退出或发生系统中断时）会被触发
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            // 关闭容器释放资源
+            container.shutdown();
+            log.info("Gateway shutdown gracefully");
+        }));
+    }
+
+    /**
+     * 初始化注册中心
+     */
     private void initRegisterCenter() {
-        RegisterCenterProcessor nacosRegisterCenterProcessor = ServiceLoader.load(RegisterCenterProcessor.class)
+        RegisterCenterService nacosRegisterCenterService = ServiceLoader.load(RegisterCenterService.class)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("未找到注册中心实现"));
+        nacosRegisterCenterService.init(config);
 
-        nacosRegisterCenterProcessor.init(config);
+        ServiceDefinition serviceDefinition = buildServiceDefinition();
+        ServiceInstance serviceInstance = buildServiceInstance();
+        nacosRegisterCenterService.register(serviceDefinition, serviceInstance);
 
-        new ServiceDefinition();
-        nacosRegisterCenterProcessor.register();
+        nacosRegisterCenterService.subscribeAllServices((sd, set) -> {
+            DynamicConfigManager.getInstance().updateServiceDefinition(sd);
+            DynamicConfigManager.getInstance().updateServiceInstance(sd, set);
+        });
+    }
+
+    /**
+     * 构建服务实例
+     * @return 服务实例
+     */
+    private ServiceInstance buildServiceInstance() {
+        String ip = NetUtil.getLocalIp();
+        return ServiceInstance.builder()
+                .serviceName(config.getName())
+                .instanceId(ip + ":" + config.getPort())
+                .ip(ip)
+                .port(config.getPort())
+                .enabled(config.getRegisterCenter().isEnabled())
+                .weight(1)
+                .build();
+    }
+
+    /**
+     * 构建服务定义
+     * @return 服务定义
+     */
+    private ServiceDefinition buildServiceDefinition() {
+        return ServiceDefinition.builder()
+                .serviceName(config.getName())
+                .env(config.getEnv())
+                .enabled(config.getConfigCenter().isEnabled())
+                .build();
     }
 
     /**
@@ -71,16 +119,14 @@ public class Bootstrap {
      */
     private void initConfigCenter() {
         // 1.使用SPI机制加载配置中心实现（如Nacos）
-        ConfigCenterProcessor configCenterProcessor = ServiceLoader.load(ConfigCenterProcessor.class)
+        ConfigCenterService configCenterService = ServiceLoader.load(ConfigCenterService.class)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("未找到注册中心实现"));
         // 2.初始化配置中心客户端，把从静态yaml文件加载到的 ConfigCenterProperties 的配置传递给配置中心实现
-        configCenterProcessor.init(config.getConfigCenter());
+        configCenterService.init(config.getConfigCenter());
         // 3.添加监听器，订阅路由变更事件
-        configCenterProcessor.subscribeRoutesChange(newRoutes -> {
+        configCenterService.subscribeRoutesChange(newRoutes -> {
             DynamicConfigManager.getInstance().updateRoutes(newRoutes);
         });
     }
-
-
 }

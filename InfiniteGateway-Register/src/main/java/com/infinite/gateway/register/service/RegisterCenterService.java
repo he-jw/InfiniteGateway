@@ -3,8 +3,9 @@ package com.infinite.gateway.register.service;
 import com.infinite.gateway.common.pojo.ServiceDefinition;
 import com.infinite.gateway.common.pojo.ServiceInstance;
 import com.infinite.gateway.config.config.Config;
+import com.infinite.gateway.register.listener.RegisterCenterListener;
 
-public interface RegisterCenterProcessor {
+public interface RegisterCenterService {
 
     /**
      * 初始化

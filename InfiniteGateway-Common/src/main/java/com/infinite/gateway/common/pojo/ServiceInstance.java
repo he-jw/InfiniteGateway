@@ -1,6 +1,9 @@
 package com.infinite.gateway.common.pojo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -9,6 +12,9 @@ import java.io.Serializable;
  * 服务实例
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ServiceInstance implements Serializable {
 
     @Serial
@@ -53,5 +59,10 @@ public class ServiceInstance implements Serializable {
      * 服务实例灰度比例
      */
     private double threshold;
+
+    /**
+     * 	服务注册的时间戳：后面我们做负载均衡，warmup预热
+     */
+    private long registerTime;
 
 }

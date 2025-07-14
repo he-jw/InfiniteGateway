@@ -5,7 +5,7 @@ import com.infinite.gateway.config.config.ConfigCenter;
 /**
  * 配置中心处理器
  */
-public interface ConfigCenterProcessor {
+public interface ConfigCenterService {
 
     /**
      * 初始化配置中心配置
