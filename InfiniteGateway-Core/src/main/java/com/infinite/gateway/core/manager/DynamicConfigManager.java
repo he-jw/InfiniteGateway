@@ -6,26 +6,35 @@ import com.infinite.gateway.common.pojo.RouteDefinition;
 import com.infinite.gateway.common.pojo.ServiceDefinition;
 import com.infinite.gateway.common.pojo.ServiceInstance;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
  * 动态配置管理，缓存从配置中心拉取下来的配置
  */
+@Slf4j
 @Data
 public class DynamicConfigManager {
 
     private static final DynamicConfigManager INSTANCE = new DynamicConfigManager();
+    private ScheduledThreadPoolExecutor scheduler;
 
     private ConcurrentHashMap<String /* path */, RouteDefinition> pathRouteDefinitionMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String /* 服务名 */, ServiceDefinition> serviceDefinitionMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String /* 服务名 */, ConcurrentHashMap<String /* 实例id */, ServiceInstance>> serviceInstanceMap = new ConcurrentHashMap<>();
+
+    static {
+        INSTANCE.initScheduler();
+    }
 
     public static DynamicConfigManager getInstance() {
         return INSTANCE;
@@ -83,6 +92,41 @@ public class DynamicConfigManager {
                 new ConcurrentHashMap<>(set.stream()
                         .collect(Collectors.toMap(ServiceInstance::getInstanceId, instance -> instance))));
     }
+
+    /**
+     * 初始化定时任务
+     */
+    private void initScheduler() {
+        scheduler = new ScheduledThreadPoolExecutor(1, r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true); // 设置为守护线程，避免阻塞程序退出
+            return t;
+        });
+
+        // 每30秒执行一次打印操作
+        scheduler.scheduleAtFixedRate(this::printAllMaps, 0, 30, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 定时任务：打印所有 map 的内容
+     */
+    private void printAllMaps() {
+        log.info("Printing all maps...（测试配置中心和验证中的效果）");
+        System.out.println("Printing pathRouteDefinitionMap:");
+        pathRouteDefinitionMap.forEach((key, value) -> System.out.println(key + " => " + value));
+
+        System.out.println("Printing serviceDefinitionMap:");
+        serviceDefinitionMap.forEach((key, value) -> System.out.println(key + " => " + value));
+
+        System.out.println("Printing serviceInstanceMap:");
+        serviceInstanceMap.forEach((serviceKey, instanceMap) -> {
+            System.out.println("Service: " + serviceKey);
+            instanceMap.forEach((instanceKey, instanceValue) ->
+                    System.out.println("  " + instanceKey + " => " + instanceValue));
+        });
+    }
+
+
 
 
 }

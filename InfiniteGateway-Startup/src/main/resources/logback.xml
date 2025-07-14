@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <!-- 修改一下路径-->
     <property name="PATH" value="./../logs/"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %blue(%-50logger{50}:%-4line) %thread %green(%-18X{LOG_ID}) %msg%n</Pattern>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %highlight(%-5level) %green(%-50logger{50}:%-4line) %thread %green(%-18X{LOG_ID}) %msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -39,12 +40,15 @@
         </filter>
     </appender>
 
-    <!-- 降低 Nacos 日志级别 -->
-    <logger name="com.alibaba.nacos" level="INFO"/>
+    <root level="ERROR">
+        <appender-ref ref="ERROR_FILE" />
+    </root>
+
+    <root level="TRACE">
+        <appender-ref ref="TRACE_FILE" />
+    </root>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />
-        <appender-ref ref="TRACE_FILE" />
-        <appender-ref ref="ERROR_FILE" />
     </root>
 </configuration>

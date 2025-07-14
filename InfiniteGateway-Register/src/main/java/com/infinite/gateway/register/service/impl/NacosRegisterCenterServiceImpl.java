@@ -21,13 +21,11 @@ import com.infinite.gateway.common.pojo.ServiceInstance;
 import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.register.listener.RegisterCenterListener;
 import com.infinite.gateway.register.service.RegisterCenterService;
+import lombok.Builder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -71,7 +69,6 @@ public class NacosRegisterCenterServiceImpl implements RegisterCenterService {
     public void register(ServiceDefinition serviceDefinition, ServiceInstance serviceInstance) {
         // 把网关实例注册到注册中心
         Instance instance = BeanUtil.toBean(serviceInstance, Instance.class);
-        instance.setMetadata(Map.of(GatewayConst.META_DATA_KEY, JSON.toJSONString(serviceInstance)));
         namingService.registerInstance(serviceInstance.getServiceName(), serviceDefinition.getEnv(), instance);
 
         // 更新服务定义
@@ -79,7 +76,7 @@ public class NacosRegisterCenterServiceImpl implements RegisterCenterService {
                 serviceDefinition.getServiceName(),
                 serviceDefinition.getEnv(),
                 0,
-                Map.of(GatewayConst.META_DATA_KEY, JSON.toJSONString(serviceInstance))
+                Map.of(GatewayConst.META_DATA_KEY, JSON.toJSONString(serviceDefinition))
         );
         log.info("register {} {}", serviceDefinition, serviceInstance);
     }
@@ -164,17 +161,21 @@ public class NacosRegisterCenterServiceImpl implements RegisterCenterService {
                     //获取服务定义信息
                     Service service = namingMaintainService.queryService(serviceName, config.getEnv());
                     //得到服务定义信息
-                    ServiceDefinition serviceDefinition =
-                            JSON.parseObject(service.getMetadata().get(GatewayConst.META_DATA_KEY),
-                                    ServiceDefinition.class);
+                    ServiceDefinition serviceDefinition = ServiceDefinition.builder()
+                            .serviceName(serviceName)
+                            .env(service.getGroupName())
+                            .enabled(true)
+                            .build();
 
                     //获取服务实例信息
-                    List<Instance> allInstances = namingService.getAllInstances(service.getName(), config.getEnv());
+                    List<Instance> allInstances = namingService.getAllInstances(service.getName(), serviceDefinition.getEnv());
                     Set<ServiceInstance> set = new HashSet<>();
                     for (Instance instance : allInstances) {
-                        ServiceInstance serviceInstance =
-                                JSON.parseObject(instance.getMetadata().get(GatewayConst.META_DATA_KEY),
-                                        ServiceInstance.class);
+                        ServiceInstance serviceInstance = BeanUtil.toBean(instance, ServiceInstance.class);
+                        serviceInstance.setInstanceId(instance.getIp() + ":" + instance.getPort());
+                        if (instance.getServiceName().contains("@@")) {
+                            serviceInstance.setServiceName(instance.getServiceName().split("@@")[1]);
+                        }
                         set.add(serviceInstance);
                     }
                     //调用我们自己的订阅监听器

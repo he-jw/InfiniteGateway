@@ -3,18 +3,15 @@ package com.infinite.gateway.core;
 import com.infinite.gateway.common.pojo.ServiceDefinition;
 import com.infinite.gateway.common.pojo.ServiceInstance;
 import com.infinite.gateway.common.util.NetUtil;
-import com.infinite.gateway.common.util.SystemUtil;
 import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.config.loader.ConfigLoader;
 import com.infinite.gateway.core.manager.DynamicConfigManager;
 import com.infinite.gateway.config.service.ConfigCenterService;
 import com.infinite.gateway.core.netty.Container;
-import com.infinite.gateway.register.listener.RegisterCenterListener;
 import com.infinite.gateway.register.service.RegisterCenterService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ServiceLoader;
-import java.util.Set;
 
 /**
  * 网关启动入口类，负责初始化并启动网关核心组件
@@ -54,11 +51,20 @@ public class Bootstrap {
         container.start();
         // 4. 初始化注册中心（服务发现）
         initRegisterCenter();
-
         // 5. 注册优雅停机钩子
-        //registerGracefullyShutdown();
+        registerGracefullyShutdown();
+    }
 
-        log.info("debug");
+    /**
+     * 注册JVM停机钩子，实现优雅停机
+     */
+    private void registerGracefullyShutdown() {
+        // 添加JVM关闭时的钩子，当JVM接收到终止信号（如kill命令、程序正常退出或发生系统中断时）会被触发
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            // 关闭容器释放资源
+            container.shutdown();
+            log.info("Gateway shutdown gracefully");
+        }));
     }
 
     /**
@@ -78,8 +84,6 @@ public class Bootstrap {
             DynamicConfigManager.getInstance().updateServiceDefinition(sd);
             DynamicConfigManager.getInstance().updateServiceInstance(sd, set);
         });
-
-
     }
 
     /**
@@ -103,11 +107,11 @@ public class Bootstrap {
      * @return 服务定义
      */
     private ServiceDefinition buildServiceDefinition() {
-        return new ServiceDefinition(
-                config.getName(),
-                config.getEnv(),
-                config.getRegisterCenter().getType()
-        );
+        return ServiceDefinition.builder()
+                .serviceName(config.getName())
+                .env(config.getEnv())
+                .enabled(config.getConfigCenter().isEnabled())
+                .build();
     }
 
     /**

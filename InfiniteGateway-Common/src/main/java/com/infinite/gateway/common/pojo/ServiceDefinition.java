@@ -1,6 +1,7 @@
 package com.infinite.gateway.common.pojo;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -11,6 +12,7 @@ import java.io.Serializable;
  * 服务定义
  */
 @Data
+@Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class ServiceDefinition implements Serializable {
@@ -31,7 +33,7 @@ public class ServiceDefinition implements Serializable {
     /**
      * 服务是否启用
      */
-    private final boolean enabled = true;
+    private boolean enabled = true;
 
     /**
      * 	服务的版本号
