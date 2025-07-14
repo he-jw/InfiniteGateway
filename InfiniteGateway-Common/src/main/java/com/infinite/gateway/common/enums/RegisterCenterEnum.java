@@ -5,13 +5,13 @@ import lombok.Getter;
 @Getter
 public enum RegisterCenterEnum {
 
-    NACOS("nacos"),
-    ZOOKEEPER("zookeeper");
+    NACOS("NACOS"),
+    ZOOKEEPER("ZOOKEEPER");
 
-    private final String des;
+    private final String name;
 
-    RegisterCenterEnum(String des) {
-        this.des = des;
+    RegisterCenterEnum(String name) {
+        this.name = name;
     }
 
 }

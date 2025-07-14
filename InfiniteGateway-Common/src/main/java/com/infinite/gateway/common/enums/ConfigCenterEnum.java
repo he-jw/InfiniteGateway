@@ -5,13 +5,13 @@ import lombok.Getter;
 @Getter
 public enum ConfigCenterEnum {
 
-    NACOS("nacos"),
-    ZOOKEEPER("zookeeper");
+    NACOS("NACOS"),
+    ZOOKEEPER("ZOOKEEPER");
 
-    private final String des;
+    private final String name;
 
-    ConfigCenterEnum(String des) {
-        this.des = des;
+    ConfigCenterEnum(String name) {
+        this.name = name;
     }
 
 }

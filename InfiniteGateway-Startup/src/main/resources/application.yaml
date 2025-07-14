@@ -1,0 +1,19 @@
+infinite:
+  gateway:
+    name: gateway
+    port: 8081
+    evn: dev
+    configCenter:
+      enabled: true
+      type: nacos
+      address: 127.0.0.1:8848
+      nacosConfig:
+        dataId: Infinite-Gateway
+        group: DEFAULT_GROUP
+        timeout: 5000
+    registerCenter:
+      type: NACOS
+      address: 127.0.0.1:8848
+logging:
+  level:
+    root: error
