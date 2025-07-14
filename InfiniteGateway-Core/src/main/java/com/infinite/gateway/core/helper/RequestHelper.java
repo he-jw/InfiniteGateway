@@ -1,7 +1,7 @@
 package com.infinite.gateway.core.helper;
 
 import com.alibaba.nacos.common.utils.StringUtils;
-import com.infinite.gateway.config.pojo.ServiceDefinition;
+import com.infinite.gateway.common.pojo.ServiceDefinition;
 import com.infinite.gateway.core.request.GatewayRequest;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;

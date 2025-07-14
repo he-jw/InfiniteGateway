@@ -5,7 +5,7 @@ infinite:
     evn: dev
     configCenter:
       enabled: true
-      type: NACOS
+      type: nacos
       address: 127.0.0.1:8848
       nacosConfig:
         dataId: Infinite-Gateway

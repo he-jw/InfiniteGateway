@@ -2,7 +2,7 @@ package com.infinite.gateway.core.netty;
 
 import com.infinite.gateway.common.util.SystemUtil;
 import com.infinite.gateway.config.config.Config;
-import com.infinite.gateway.config.config.HttpClientConfig;
+import com.infinite.gateway.config.config.http.HttpClientConfig;
 import com.infinite.gateway.core.LifeCycle;
 import com.infinite.gateway.core.http.HttpClient;
 import io.netty.buffer.PooledByteBufAllocator;

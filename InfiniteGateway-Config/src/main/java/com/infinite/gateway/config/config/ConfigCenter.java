@@ -1,9 +1,8 @@
 package com.infinite.gateway.config.config;
 
 import com.infinite.gateway.common.enums.ConfigCenterEnum;
+import com.infinite.gateway.config.config.nacos.NacosConfig;
 import lombok.Data;
-
-import static com.infinite.gateway.common.constant.ConfigCenterConstant.*;
 
 /**
  * 配置中心
@@ -11,11 +10,11 @@ import static com.infinite.gateway.common.constant.ConfigCenterConstant.*;
 @Data
 public class ConfigCenter {
 
-    private boolean enabled = CONFIG_CENTER_DEFAULT_ENABLED; // 是否开启配置中心
+    private String address = "localhost:8848";
 
-    private ConfigCenterEnum type = CONFIG_CENTER_DEFAULT_IMPL; // 配置中心实现
+    private boolean enabled = true;
 
-    private String address = CONFIG_CENTER_DEFAULT_ADDRESS; // 配置中心地址
+    private String type = ConfigCenterEnum.NACOS.getName();
 
     private NacosConfig nacosConfig = new NacosConfig();
 

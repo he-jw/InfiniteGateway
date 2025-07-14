@@ -2,8 +2,8 @@ package com.infinite.gateway.core.netty.processor;
 
 import com.infinite.gateway.common.enums.ResponseCode;
 import com.infinite.gateway.common.exception.GatewayException;
-import com.infinite.gateway.config.manager.DynamicConfigManager;
-import com.infinite.gateway.config.pojo.RouteDefinition;
+import com.infinite.gateway.core.manager.DynamicConfigManager;
+import com.infinite.gateway.common.pojo.RouteDefinition;
 import com.infinite.gateway.core.context.GatewayContext;
 import com.infinite.gateway.core.helper.RequestHelper;
 import com.infinite.gateway.core.helper.ResponseHelper;

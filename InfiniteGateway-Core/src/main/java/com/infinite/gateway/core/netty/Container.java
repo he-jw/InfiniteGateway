@@ -1,9 +1,7 @@
-package com.infinite.gateway.core.config;
+package com.infinite.gateway.core.netty;
 
 import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.core.LifeCycle;
-import com.infinite.gateway.core.netty.NettyHttpClient;
-import com.infinite.gateway.core.netty.NettyHttpServer;
 import com.infinite.gateway.core.netty.processor.NettyCoreProcessor;
 
 public class Container implements LifeCycle {

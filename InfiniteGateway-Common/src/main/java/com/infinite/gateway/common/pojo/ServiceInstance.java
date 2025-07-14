@@ -1,4 +1,4 @@
-package com.infinite.gateway.config.pojo;
+package com.infinite.gateway.common.pojo;
 
 import lombok.Data;
 

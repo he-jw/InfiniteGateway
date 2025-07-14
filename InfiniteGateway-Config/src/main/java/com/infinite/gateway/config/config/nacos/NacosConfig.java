@@ -1,4 +1,4 @@
-package com.infinite.gateway.config.config;
+package com.infinite.gateway.config.config.nacos;
 
 import lombok.Data;
 

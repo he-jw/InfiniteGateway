@@ -1,10 +1,10 @@
-package com.infinite.gateway.config.manager;
+package com.infinite.gateway.core.manager;
 
 import com.infinite.gateway.common.enums.ResponseCode;
 import com.infinite.gateway.common.exception.NotFoundException;
-import com.infinite.gateway.config.pojo.RouteDefinition;
-import com.infinite.gateway.config.pojo.ServiceDefinition;
-import com.infinite.gateway.config.pojo.ServiceInstance;
+import com.infinite.gateway.common.pojo.RouteDefinition;
+import com.infinite.gateway.common.pojo.ServiceDefinition;
+import com.infinite.gateway.common.pojo.ServiceInstance;
 import lombok.Data;
 
 import java.util.ArrayList;

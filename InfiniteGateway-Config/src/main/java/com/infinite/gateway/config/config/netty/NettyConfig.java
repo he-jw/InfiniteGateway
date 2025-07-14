@@ -1,4 +1,4 @@
-package com.infinite.gateway.config.config;
+package com.infinite.gateway.config.config.netty;
 
 import lombok.Data;
 

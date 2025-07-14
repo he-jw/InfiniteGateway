@@ -1,6 +1,6 @@
 package com.infinite.gateway.core.context;
 
-import com.infinite.gateway.config.pojo.RouteDefinition;
+import com.infinite.gateway.common.pojo.RouteDefinition;
 import com.infinite.gateway.core.filter.FilterChain;
 import com.infinite.gateway.core.helper.ResponseHelper;
 import com.infinite.gateway.core.request.GatewayRequest;

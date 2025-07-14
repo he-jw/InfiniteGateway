@@ -1,6 +1,6 @@
 package com.infinite.gateway.config.service;
 
-import com.infinite.gateway.config.pojo.RouteDefinition;
+import com.infinite.gateway.common.pojo.RouteDefinition;
 
 import java.util.List;
 

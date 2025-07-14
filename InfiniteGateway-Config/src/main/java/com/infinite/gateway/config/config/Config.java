@@ -1,6 +1,8 @@
 package com.infinite.gateway.config.config;
 
 
+import com.infinite.gateway.config.config.http.HttpClientConfig;
+import com.infinite.gateway.config.config.netty.NettyConfig;
 import lombok.Data;
 
 import static com.infinite.gateway.common.constant.ConfigConstant.*;

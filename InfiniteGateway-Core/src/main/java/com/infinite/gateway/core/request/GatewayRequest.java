@@ -2,11 +2,10 @@ package com.infinite.gateway.core.request;
 
 import com.alibaba.nacos.common.utils.StringUtils;
 import com.infinite.gateway.common.constant.HttpConstant;
-import com.infinite.gateway.config.pojo.ServiceDefinition;
+import com.infinite.gateway.common.pojo.ServiceDefinition;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
-import lombok.Builder;
 import lombok.Data;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.RequestBuilder;

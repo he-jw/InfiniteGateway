@@ -2,7 +2,7 @@ package com.infinite.gateway.core.netty;
 
 import com.infinite.gateway.common.util.SystemUtil;
 import com.infinite.gateway.config.config.Config;
-import com.infinite.gateway.config.config.NettyConfig;
+import com.infinite.gateway.config.config.netty.NettyConfig;
 import com.infinite.gateway.core.LifeCycle;
 import com.infinite.gateway.core.netty.handler.NettyHttpServerHandler;
 import com.infinite.gateway.core.netty.processor.NettyProcessor;

@@ -1,10 +1,12 @@
 package com.infinite.gateway.core;
 
+import com.infinite.gateway.common.pojo.ServiceDefinition;
 import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.config.loader.ConfigLoader;
-import com.infinite.gateway.config.manager.DynamicConfigManager;
+import com.infinite.gateway.core.manager.DynamicConfigManager;
 import com.infinite.gateway.config.service.ConfigCenterProcessor;
-import com.infinite.gateway.core.config.Container;
+import com.infinite.gateway.core.netty.Container;
+import com.infinite.gateway.register.service.RegisterCenterProcessor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ServiceLoader;
@@ -54,7 +56,14 @@ public class Bootstrap {
     }
 
     private void initRegisterCenter() {
+        RegisterCenterProcessor nacosRegisterCenterProcessor = ServiceLoader.load(RegisterCenterProcessor.class)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("未找到注册中心实现"));
 
+        nacosRegisterCenterProcessor.init(config);
+
+        new ServiceDefinition();
+        nacosRegisterCenterProcessor.register();
     }
 
     /**
@@ -72,4 +81,6 @@ public class Bootstrap {
             DynamicConfigManager.getInstance().updateRoutes(newRoutes);
         });
     }
+
+
 }
