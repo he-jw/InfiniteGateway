@@ -5,6 +5,7 @@ import com.infinite.gateway.common.pojo.ServiceInstance;
 import com.infinite.gateway.common.util.NetUtil;
 import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.config.loader.ConfigLoader;
+import com.infinite.gateway.core.filter.FilterChainFactory;
 import com.infinite.gateway.core.manager.DynamicConfigManager;
 import com.infinite.gateway.config.service.ConfigCenterService;
 import com.infinite.gateway.core.netty.Container;
@@ -126,7 +127,10 @@ public class Bootstrap {
         configCenterService.init(config.getConfigCenter());
         // 3.添加监听器，订阅路由变更事件
         configCenterService.subscribeRoutesChange(newRoutes -> {
+            // 更新路由
             DynamicConfigManager.getInstance().updateRoutes(newRoutes);
+            // 广播路由变更
+            DynamicConfigManager.getInstance().onRouteListeners(newRoutes);
         });
     }
 }
