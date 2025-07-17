@@ -9,10 +9,7 @@ import com.infinite.gateway.core.listener.RouteListener;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -49,6 +46,14 @@ public class DynamicConfigManager {
 
     public static DynamicConfigManager getInstance() {
         return INSTANCE;
+    }
+
+    public List<ServiceInstance> getServiceInstances(String serviceName) {
+        ConcurrentHashMap<String, ServiceInstance> map = serviceInstanceMap.get(serviceName);
+        if (map == null || map.isEmpty()) {
+            return null;
+        }
+        return new ArrayList<>(map.values());
     }
 
     public void onRouteListeners(List<RouteDefinition> newRoutes) {
