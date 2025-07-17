@@ -1,7 +1,7 @@
 infinite:
   gateway:
     name: api-gateway
-    port: 8081
+    port: 10011
     evn: dev
     configCenter:
       address: 127.0.0.1:8848

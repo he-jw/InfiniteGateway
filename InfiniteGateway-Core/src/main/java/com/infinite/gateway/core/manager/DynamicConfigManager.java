@@ -5,14 +5,13 @@ import com.infinite.gateway.common.exception.NotFoundException;
 import com.infinite.gateway.common.pojo.RouteDefinition;
 import com.infinite.gateway.common.pojo.ServiceDefinition;
 import com.infinite.gateway.common.pojo.ServiceInstance;
+import com.infinite.gateway.core.listener.RouteListener;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -26,11 +25,20 @@ import java.util.stream.Collectors;
 public class DynamicConfigManager {
 
     private static final DynamicConfigManager INSTANCE = new DynamicConfigManager();
+    /**
+     * 定时任务执行器, 用于定时打印所有 map 的内容，方便开发时调试
+     */
     private ScheduledThreadPoolExecutor scheduler;
 
     private ConcurrentHashMap<String /* path */, RouteDefinition> pathRouteDefinitionMap = new ConcurrentHashMap<>();
+
+    private ConcurrentHashMap<String /* 服务名 */, RouteDefinition> serviceRouteDefinitionMap = new ConcurrentHashMap<>();
+
     private final ConcurrentHashMap<String /* 服务名 */, ServiceDefinition> serviceDefinitionMap = new ConcurrentHashMap<>();
+
     private final ConcurrentHashMap<String /* 服务名 */, ConcurrentHashMap<String /* 实例id */, ServiceInstance>> serviceInstanceMap = new ConcurrentHashMap<>();
+
+    private ConcurrentHashMap<String /* 服务名 */, List<RouteListener>> routeListeners = new ConcurrentHashMap<>();
 
     static {
         INSTANCE.initScheduler();
@@ -40,11 +48,35 @@ public class DynamicConfigManager {
         return INSTANCE;
     }
 
+    public List<ServiceInstance> getServiceInstances(String serviceName) {
+        ConcurrentHashMap<String, ServiceInstance> map = serviceInstanceMap.get(serviceName);
+        if (map == null || map.isEmpty()) {
+            return null;
+        }
+        return new ArrayList<>(map.values());
+    }
+
+    public void onRouteListeners(List<RouteDefinition> newRoutes) {
+        for (RouteDefinition newRoute : newRoutes) {
+            routeListeners.computeIfPresent(newRoute.getServiceName(), (key, value) -> {
+                for (RouteListener routeListener : value) {
+                    routeListener.changeOnRoute(newRoute);
+                }
+                return value;
+            });
+        }
+    }
+
+    public void addRouteListener(String serviceName , RouteListener routeListener) {
+        routeListeners.computeIfAbsent(serviceName, key -> new CopyOnWriteArrayList<>()).add(routeListener);
+    }
+
     /**
      * 更新路由
      * @param newRoutes
      */
     public synchronized void updateRoutes(List<RouteDefinition> newRoutes) {
+        // 1.更新 newPathRouteDefinitionMap
         ConcurrentHashMap<String, RouteDefinition> newPathRouteDefinitionMap = new ConcurrentHashMap<>();
         for (RouteDefinition newRoute : newRoutes) {
             for (String path : newRoute.getPaths()) {
@@ -52,14 +84,20 @@ public class DynamicConfigManager {
             }
         }
         pathRouteDefinitionMap = newPathRouteDefinitionMap;
+
+        // 2.更新 newServiceRouteDefinitionMap
+        ConcurrentHashMap<String, RouteDefinition> newServiceRouteDefinitionMap = new ConcurrentHashMap<>();
+        for (RouteDefinition newRoute : newRoutes) {
+            newServiceRouteDefinitionMap.put(newRoute.getServiceName(), newRoute);
+        }
+        serviceRouteDefinitionMap = newServiceRouteDefinitionMap;
     }
 
     /**
-     * 根据uri匹配路由，通过uri匹配上了多个路由，则返回 path 长度最大的路由
+     * 根据uri(格式：/user/1)匹配路由，通过uri匹配上了多个路由，则返回 path 长度最大的路由
      * @param uri
      * @return
      */
-    // TODO: uri的格式是什么样的
     public RouteDefinition matchingRouteByUri(String uri) {
         List<RouteDefinition> routeDefinitions = new ArrayList<>();
         List<Map.Entry<String, RouteDefinition>> entryList = pathRouteDefinitionMap.entrySet()

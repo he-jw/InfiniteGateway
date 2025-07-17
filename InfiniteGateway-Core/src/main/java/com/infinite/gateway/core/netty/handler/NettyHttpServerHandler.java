@@ -2,10 +2,10 @@ package com.infinite.gateway.core.netty.handler;
 
 import com.infinite.gateway.core.netty.processor.NettyProcessor;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;
 
-public class NettyHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class NettyHttpServerHandler extends ChannelInboundHandlerAdapter {
 
     private final NettyProcessor nettyProcessor;
 
@@ -14,7 +14,13 @@ public class NettyHttpServerHandler extends SimpleChannelInboundHandler<FullHttp
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
-        nettyProcessor.process(ctx, msg);
+    public void channelRead(ChannelHandlerContext ctx, Object msg){
+        nettyProcessor.process(ctx, (FullHttpRequest) msg);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        // 调用父类的 exceptionCaught 方法，它将按照 ChannelPipeline 中的下一个处理器继续处理异常
+        super.exceptionCaught(ctx, cause);
     }
 }

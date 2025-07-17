@@ -24,7 +24,7 @@ public enum ResponseCode {
     GATEWAY_FALLBACK(HttpResponseStatus.GATEWAY_TIMEOUT, "业务暂时不可用，触发熔断降级"),
     REQUEST_TIMEOUT(HttpResponseStatus.GATEWAY_TIMEOUT, "连接下游服务超时"),
 
-    INTERNAL_ERROR(HttpResponseStatus.INTERNAL_SERVER_ERROR, "网关内部错误"),
+    INTERNAL_ERROR(HttpResponseStatus.INTERNAL_SERVER_ERROR, "服务内部错误"),
     FILTER_CONFIG_PARSE_ERROR(HttpResponseStatus.INTERNAL_SERVER_ERROR, "过滤器配置解析异常"),
     HTTP_RESPONSE_ERROR(HttpResponseStatus.INTERNAL_SERVER_ERROR, "服务返回异常"),
     FLOW_CONTROL_ERROR(HttpResponseStatus.INTERNAL_SERVER_ERROR, "请求过量错误");
