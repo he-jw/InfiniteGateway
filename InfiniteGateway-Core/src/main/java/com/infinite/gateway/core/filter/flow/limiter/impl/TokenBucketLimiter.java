@@ -16,7 +16,7 @@ public class TokenBucketLimiter implements FlowLimiter {
     private final int produceRate;
     private final AtomicInteger avilableTokens;
 
-    private TokenBucketLimiter(int capacityTokens, int produceRate) {
+    public TokenBucketLimiter(int capacityTokens, int produceRate) {
         this.capacityTokens = capacityTokens;
         this.produceRate = produceRate;
         this.avilableTokens = new AtomicInteger(0);

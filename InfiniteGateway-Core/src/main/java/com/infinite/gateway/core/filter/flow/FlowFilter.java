@@ -43,7 +43,7 @@ public class FlowFilter implements Filter {
     private FlowLimiter buildFlowLimiter(RouteDefinition.FlowFilterConfig flowFilterConfig, GatewayContext context) {
         switch (flowFilterConfig.getType()) {
             case TOKEN_BUCKET:
-                return new TokenBucketLimiter();
+                return new TokenBucketLimiter(flowFilterConfig.getCapacity(), flowFilterConfig.getRate());
             case LEAKY_BUCKET:
                 return new leakyBucketLimiter(
                         flowFilterConfig.getCapacity(),
@@ -52,7 +52,7 @@ public class FlowFilter implements Filter {
             case SLIDING_WINDOW:
                 return new SlidingWindowLimiter(flowFilterConfig.getCapacity());
             default:
-                return new TokenBucketLimiter();
+                return new TokenBucketLimiter(flowFilterConfig.getCapacity(), flowFilterConfig.getRate());
         }
     }
 
