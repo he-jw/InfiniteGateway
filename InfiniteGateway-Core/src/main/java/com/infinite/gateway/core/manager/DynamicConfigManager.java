@@ -67,7 +67,7 @@ public class DynamicConfigManager {
         }
     }
 
-    public void addRouteListener(String serviceName , RouteListener routeListener) {
+    public void addRouteListener(String serviceName, RouteListener routeListener) {
         routeListeners.computeIfAbsent(serviceName, key -> new CopyOnWriteArrayList<>()).add(routeListener);
     }
 
