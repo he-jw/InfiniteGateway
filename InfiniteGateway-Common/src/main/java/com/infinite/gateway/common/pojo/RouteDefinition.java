@@ -113,7 +113,7 @@ public class RouteDefinition {
         /**
          * 是否开启流控
          */
-        private boolean enabled = false;
+        private boolean enabled = true;
 
         /**
          * 流控类型

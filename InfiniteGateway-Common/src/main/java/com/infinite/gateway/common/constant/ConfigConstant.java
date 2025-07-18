@@ -8,7 +8,7 @@ public interface ConfigConstant {
 
     String DEFAULT_NAME = "infinite-gateway"; // 服务默认名字
 
-    int DEFAULT_PORT = 9999; // 默认端口
+    int DEFAULT_PORT = 10011; // 默认端口
 
     String DEFAULT_ENV = "dev"; // 默认环境
 

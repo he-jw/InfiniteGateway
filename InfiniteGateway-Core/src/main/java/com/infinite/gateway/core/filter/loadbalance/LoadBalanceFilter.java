@@ -7,7 +7,8 @@ import com.infinite.gateway.common.pojo.RouteDefinition;
 import com.infinite.gateway.common.pojo.ServiceInstance;
 import com.infinite.gateway.core.context.GatewayContext;
 import com.infinite.gateway.core.filter.Filter;
-import com.infinite.gateway.core.filter.loadbalance.startegy.LoadBalanceStrategy;
+import com.infinite.gateway.core.filter.loadbalance.strategy.LoadBalanceStrategy;
+import com.infinite.gateway.core.filter.loadbalance.strategy.LoadBalanceStrategyManager;
 import com.infinite.gateway.core.manager.DynamicConfigManager;
 import com.infinite.gateway.core.util.FilterUtil;
 

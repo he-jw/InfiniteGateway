@@ -54,14 +54,12 @@ public class ResponseHelper {
         return httpResponse;
     }
 
-
     public static GatewayResponse buildGatewayResponse(Response response) {
         GatewayResponse gatewayResponse = new GatewayResponse();
         gatewayResponse.setResponseHeaders(response.getHeaders());
         gatewayResponse.setHttpResponseStatus(HttpResponseStatus.valueOf(response.getStatusCode()));
         gatewayResponse.setContent(response.getResponseBody());
         gatewayResponse.setResponse(response);
-
         return gatewayResponse;
     }
 

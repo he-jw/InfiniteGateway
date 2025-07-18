@@ -1,2 +1,3 @@
 com.infinite.gateway.core.filter.route.RouterFilter
 com.infinite.gateway.core.filter.loadbalance.LoadBalanceFilter
+com.infinite.gateway.core.filter.flow.FlowFilter

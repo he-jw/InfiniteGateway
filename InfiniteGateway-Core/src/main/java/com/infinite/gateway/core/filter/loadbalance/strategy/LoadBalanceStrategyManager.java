@@ -1,7 +1,4 @@
-package com.infinite.gateway.core.filter.loadbalance;
-
-import com.infinite.gateway.core.filter.loadbalance.startegy.LoadBalanceStrategy;
-import com.infinite.gateway.core.filter.loadbalance.startegy.RoundRobinLoadBalanceStrategy;
+package com.infinite.gateway.core.filter.loadbalance.strategy;
 
 import java.util.HashMap;
 import java.util.Map;

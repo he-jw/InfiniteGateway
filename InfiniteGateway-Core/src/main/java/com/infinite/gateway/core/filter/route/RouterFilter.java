@@ -19,7 +19,7 @@ public class RouterFilter implements Filter {
     public void doPreFilter(GatewayContext context) {
         RouteDefinition.ResilienceConfig resilienceConfig = context.getRoute().getResilienceConfig();
         if (resilienceConfig != null && resilienceConfig.isEnabled()) {
-            // TODO
+            // TODO 熔断
         } else {
             Request request = context.getRequest().buildUrl();
             CompletableFuture<Response> future = HttpClient.getInstance().executeRequest(request);

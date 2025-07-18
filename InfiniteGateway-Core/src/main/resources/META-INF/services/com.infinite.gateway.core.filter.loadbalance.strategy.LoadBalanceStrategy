@@ -1,0 +1,4 @@
+com.infinite.gateway.core.filter.loadbalance.strategy.RandomLoadBalanceStrategy
+com.infinite.gateway.core.filter.loadbalance.strategy.RoundRobinLoadBalanceStrategy
+com.infinite.gateway.core.filter.loadbalance.strategy.WeightLoadBalanceStrategy
+com.infinite.gateway.core.filter.loadbalance.strategy.ConsistentHashingLoadBalanceStrategy
