@@ -1,4 +1,4 @@
-<img width="1190" height="85" alt="image" src="https://github.com/user-attachments/assets/ebb02e35-9d76-4be7-9e7d-0d0334f4b72f" /># 🚀 InfiniteGateway
+# 🚀 InfiniteGateway
 
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Java](https://img.shields.io/badge/Java-17+-green.svg)](https://openjdk.java.net/)
