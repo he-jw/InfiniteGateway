@@ -202,7 +202,6 @@ public class CustomLoadBalanceStrategy implements LoadBalanceStrategy {
 - ✅ 核心网关功能
 - ✅ 基础过滤器支持
 - ✅ 多种负载均衡策略
-- ✅ 基础监控指标
 
 ### v2.0 (未来规划)
 - 📋 gRPC 协议支持
