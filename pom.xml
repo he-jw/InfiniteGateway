@@ -13,6 +13,7 @@
         <module>InfiniteGateway-Common</module>
         <module>InfiniteGateway-Config</module>
         <module>InfiniteGateway-Register</module>
+        <module>InfiniteGateway-Startup</module>
     </modules>
 
     <properties>
