@@ -8,6 +8,7 @@ import com.infinite.gateway.core.http.HttpClient;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class NettyHttpClient implements LifeCycle {
             eventLoopGroupWorker = new EpollEventLoopGroup(
                     config.getHttpClient().getEventLoopGroupWorkerNum(),
                     new DefaultThreadFactory("epoll-netty-worker-nio"));
-        } else {
+        }else {
             eventLoopGroupWorker = new NioEventLoopGroup(
                     config.getHttpClient().getEventLoopGroupWorkerNum(),
                     new DefaultThreadFactory("default-netty-worker-nio"));

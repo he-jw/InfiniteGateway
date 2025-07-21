@@ -2,6 +2,7 @@ package com.infinite.gateway.common.util;
 
 
 import io.netty.channel.epoll.Epoll;
+import io.netty.channel.kqueue.KQueue;
 
 public class SystemUtil {
 	
@@ -11,9 +12,12 @@ public class SystemUtil {
 
     private static boolean isWindowsPlatform = false;
 
+    private static boolean isMacPlatform = false;
+
     static {
-        if (OS_NAME != null && OS_NAME.toLowerCase().contains("macos")) {
-            isLinuxPlatform = true;
+        System.out.println("OS Name: " + SystemUtil.OS_NAME);
+        if (OS_NAME != null && OS_NAME.toLowerCase().contains("mac")|| OS_NAME.toLowerCase().contains("darwin")) {
+            isMacPlatform = true;
         }
 
         if (OS_NAME != null && OS_NAME.toLowerCase().contains("linux")) {
@@ -33,8 +37,16 @@ public class SystemUtil {
         return isLinuxPlatform;
     }
 
+    public static boolean isMacPlatform() {
+        return isMacPlatform;
+    }
+
     public static boolean useEpoll() {
         return isLinuxPlatform() && Epoll.isAvailable();
+    }
+
+    public static boolean useKqueue() {
+        return isMacPlatform() && KQueue.isAvailable();
     }
 
 }
