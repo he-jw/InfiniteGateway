@@ -32,11 +32,11 @@ public class NettyHttpClient implements LifeCycle {
         if (SystemUtil.isLinuxPlatform()) {
             eventLoopGroupWorker = new EpollEventLoopGroup(
                     config.getHttpClient().getEventLoopGroupWorkerNum(),
-                    new DefaultThreadFactory("epoll-netty-worker-nio"));
+                    new DefaultThreadFactory("epoll-netty-client-worker-nio"));
         }else {
             eventLoopGroupWorker = new NioEventLoopGroup(
                     config.getHttpClient().getEventLoopGroupWorkerNum(),
-                    new DefaultThreadFactory("default-netty-worker-nio"));
+                    new DefaultThreadFactory("default-netty-client-worker-nio"));
         }
     }
 

@@ -55,21 +55,21 @@ public class NettyHttpServer implements LifeCycle {
             // Linux系统使用Epoll模型
             this.eventLoopGroupBoss = new EpollEventLoopGroup(
                     nettyConfig.getEventLoopGroupBossNum(),
-                    new DefaultThreadFactory("epoll-netty-boss-nio")
+                    new DefaultThreadFactory("epoll-netty-server-boss-nio")
             );
             this.eventLoopGroupWorker = new EpollEventLoopGroup(
                     nettyConfig.getEventLoopGroupWorkerNum(),
-                    new DefaultThreadFactory("epoll-netty-worker-nio")
+                    new DefaultThreadFactory("epoll-netty-server-worker-nio")
             );
         } else {
             // 其他系统使用NIO模型
             this.eventLoopGroupBoss = new NioEventLoopGroup(
                     nettyConfig.getEventLoopGroupBossNum(),
-                    new DefaultThreadFactory("default-netty-boss-nio")
+                    new DefaultThreadFactory("default-netty-server-boss-nio")
             );
             this.eventLoopGroupWorker = new NioEventLoopGroup(
                     nettyConfig.getEventLoopGroupWorkerNum(),
-                    new DefaultThreadFactory("default-netty-worker-nio")
+                    new DefaultThreadFactory("default-netty-server-worker-nio")
             );
         }
     }
