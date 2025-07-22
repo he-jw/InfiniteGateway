@@ -22,49 +22,52 @@ public class RouterFilter implements Filter {
     public void doPreFilter(GatewayContext context) {
         RouteDefinition.ResilienceConfig resilienceConfig = context.getRoute().getResilienceConfig();
         if (resilienceConfig != null && resilienceConfig.isEnabled()) {
-            resilienceRoute(context, resilienceConfig);
+            resilienceRoute(context);
         } else {
             route(context);
         }
     }
 
-    private void resilienceRoute(GatewayContext context, RouteDefinition.ResilienceConfig resilienceConfig) {
+    private void resilienceRoute(GatewayContext context) {
         Supplier<CompletionStage<Response>> supplier = buildRouteSupplier(context);
-        Resilience.getInstance().build(context, supplier).get().exceptionally(throwable -> {
-            if (!resilienceConfig.isFallbackEnabled()) {
-                context.setResponse(ResponseHelper.buildGatewayResponse(ResponseCode.SERVICE_UNAVAILABLE));
-                context.writeBackResponse();
-            }
-            return null;
-        });
+        CompletionStage<Response> responseStage = Resilience.getInstance().build(context, supplier).get();
+        handleResponseAsync(context, responseStage);
     }
 
     private void route(GatewayContext context) {
-        buildRouteSupplier(context).get().exceptionally(throwable -> {
+        CompletionStage<Response> responseStage = buildRouteSupplier(context).get();
+        handleResponseAsync(context, responseStage);
+    }
+
+    /**
+     * 处理异步响应的公共方法
+     * 将响应处理任务重新交给服务端Netty的EventLoop执行
+     */
+    private void handleResponseAsync(GatewayContext context, CompletionStage<Response> responseStage) {
+        EventLoop serverEventLoop = context.getNettyCtx().channel().eventLoop();
+        
+        responseStage.whenCompleteAsync((response, throwable) -> {
+            try {
+                if (throwable != null) {
+                    context.setThrowable(throwable);
+                    throw new RuntimeException(throwable);
+                }
+                context.setResponse(ResponseHelper.buildGatewayResponse(response));
+                context.doFilter();
+            } catch (Exception e) {
+                context.setResponse(ResponseHelper.buildGatewayResponse(ResponseCode.INTERNAL_ERROR));
+                context.writeBackResponse();
+            }
+        }, serverEventLoop).exceptionallyAsync(throwable -> {
             context.setResponse(ResponseHelper.buildGatewayResponse(ResponseCode.INTERNAL_ERROR));
             context.writeBackResponse();
             return null;
-        });
+        }, serverEventLoop);
     }
 
     private Supplier<CompletionStage<Response>> buildRouteSupplier(GatewayContext context) {
         Request request = context.getRequest().buildUrl();
-        EventLoop serverEventLoop = context.getNettyCtx().channel().eventLoop();
-
-        return () -> HttpClient.getInstance().executeRequest(request).whenCompleteAsync((response, throwable) -> {
-                    try {
-                        if (throwable != null) {
-                            context.setThrowable(throwable);
-                            throw new RuntimeException(throwable);
-                        }
-                        context.setResponse(ResponseHelper.buildGatewayResponse(response));
-                        context.doFilter();
-
-                    } catch (Exception e) {
-                        context.setResponse(ResponseHelper.buildGatewayResponse(ResponseCode.INTERNAL_ERROR));
-                        context.writeBackResponse();
-                    }
-                }, serverEventLoop);
+        return () -> HttpClient.getInstance().executeRequest(request);
     }
 
     @Override
