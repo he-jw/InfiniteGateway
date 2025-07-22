@@ -67,15 +67,8 @@ public class Resilience {
                     ThreadPoolBulkhead threadPoolBulkhead = ResilienceFactory.buildThreadPoolBulkhead(resilienceConfig, serviceName);
                     if (threadPoolBulkhead != null) {
                         Supplier<CompletionStage<Response>> finalSupplier = supplier;
-                        supplier = () -> {
-                            CompletionStage<CompletableFuture<Response>> future =
-                                    threadPoolBulkhead.executeSupplier(() -> finalSupplier.get().toCompletableFuture());
-                            try {
-                                return future.toCompletableFuture().get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                throw new RuntimeException(e);
-                            }
-                        };
+                        supplier = () -> threadPoolBulkhead.executeSupplier(() ->
+                                finalSupplier.get().toCompletableFuture().join());
                     }
                 }
             }
