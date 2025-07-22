@@ -90,7 +90,7 @@
 
 ### 1. 下载源码
 ```bash
-git clone https://github.com/your-username/InfiniteGateway.git
+git clone https://github.com/he-jw/InfiniteGateway.git
 
 cd InfiniteGateway
 ```
