@@ -7,6 +7,7 @@ import com.infinite.gateway.core.filter.Filter;
 import com.infinite.gateway.core.filter.route.resilience.Resilience;
 import com.infinite.gateway.core.helper.ResponseHelper;
 import com.infinite.gateway.core.http.HttpClient;
+import io.netty.channel.EventLoop;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.Response;
 
@@ -48,15 +49,22 @@ public class RouterFilter implements Filter {
 
     private Supplier<CompletionStage<Response>> buildRouteSupplier(GatewayContext context) {
         Request request = context.getRequest().buildUrl();
-        return () -> HttpClient.getInstance().executeRequest(request).whenComplete((response, throwable) -> {
-            if (throwable != null) {
-                context.setThrowable(throwable);
-                System.out.println(throwable.getMessage());
-                throw new RuntimeException();
-            }
-            context.setResponse(ResponseHelper.buildGatewayResponse(response));
-            context.doFilter();
-        });
+        EventLoop serverEventLoop = context.getNettyCtx().channel().eventLoop();
+
+        return () -> HttpClient.getInstance().executeRequest(request).whenCompleteAsync((response, throwable) -> {
+                    try {
+                        if (throwable != null) {
+                            context.setThrowable(throwable);
+                            throw new RuntimeException(throwable);
+                        }
+                        context.setResponse(ResponseHelper.buildGatewayResponse(response));
+                        context.doFilter();
+
+                    } catch (Exception e) {
+                        context.setResponse(ResponseHelper.buildGatewayResponse(ResponseCode.INTERNAL_ERROR));
+                        context.writeBackResponse();
+                    }
+                }, serverEventLoop);
     }
 
     @Override
