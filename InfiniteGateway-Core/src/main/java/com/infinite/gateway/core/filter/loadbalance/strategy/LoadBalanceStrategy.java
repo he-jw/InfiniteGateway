@@ -10,7 +10,7 @@ public interface LoadBalanceStrategy {
 
     ServiceInstance chooseInstance(GatewayContext gatewayContext,
                                    List<ServiceInstance> instances,
-                                   RouteDefinition.LoadBalanceFilterConfig routeDefinition);
+                                   RouteDefinition.LoadBalanceFilterConfig loadBalanceFilterConfig);
 
     String mark();
 
