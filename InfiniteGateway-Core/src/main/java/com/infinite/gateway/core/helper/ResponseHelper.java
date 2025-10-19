@@ -72,6 +72,22 @@ public class ResponseHelper {
         return gatewayResponse;
     }
 
+    /**
+     * 构建带自定义消息的网关响应
+     *
+     * @param code 响应码（决定HTTP状态码）
+     * @param customMessage 自定义消息（覆盖默认消息）
+     * @return 网关响应对象
+     */
+    public static GatewayResponse buildGatewayResponse(ResponseCode code, String customMessage) {
+        GatewayResponse gatewayResponse = new GatewayResponse();
+        gatewayResponse.addHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON + ";charset=utf-8");
+        gatewayResponse.setHttpResponseStatus(code.getStatus());
+        gatewayResponse.setContent(JSONUtil.toJsonStr(customMessage));
+
+        return gatewayResponse;
+    }
+
     public static GatewayResponse buildGatewayResponse(Object data) {
         GatewayResponse gatewayResponse = new GatewayResponse();
         gatewayResponse.addHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON + ";charset=utf-8");
