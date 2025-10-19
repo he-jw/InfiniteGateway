@@ -28,46 +28,156 @@
         <nacos.version>2.3.3</nacos.version>
         <logback.version>1.4.13</logback.version>
         <slf4j.version>2.0.7</slf4j.version>
-        <fastjson.verson>1.2.76</fastjson.verson>
+        <fastjson.version>1.2.76</fastjson.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <hutool.version>5.8.26</hutool.version>
         <async-http-client.version>2.12.3</async-http-client.version>
         <resilience4j.version>2.2.0</resilience4j.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!--lombok-->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <!--junit-->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!--日志-->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+
+            <!-- 其他项目依赖 -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-handler</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-http</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.nacos</groupId>
+                <artifactId>nacos-client</artifactId>
+                <version>${nacos.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>${commons-beanutils.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.asynchttpclient</groupId>
+                <artifactId>async-http-client</artifactId>
+                <version>${async-http-client.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.asynchttpclient</groupId>
+                <artifactId>async-http-client-netty-utils</artifactId>
+                <version>${async-http-client.version}</version>
+            </dependency>
+
+            <!--resilience4j-->
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-all</artifactId>
+                <version>${resilience4j.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!--lombok-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
         </dependency>
         <!--junit-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <!--日志-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>${logback.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
         </dependency>
-
     </dependencies>
 
 </project>

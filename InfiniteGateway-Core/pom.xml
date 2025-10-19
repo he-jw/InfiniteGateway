@@ -31,7 +31,6 @@
         <dependency>
             <groupId>org.asynchttpclient</groupId>
             <artifactId>async-http-client</artifactId>
-            <version>${async-http-client.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.activation</groupId>
@@ -43,21 +42,18 @@
         <dependency>
             <groupId>org.asynchttpclient</groupId>
             <artifactId>async-http-client-netty-utils</artifactId>
-            <version>${async-http-client.version}</version>
         </dependency>
 
         <!--netty-->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>${netty.version}</version>
         </dependency>
 
         <!--resilience4j-->
         <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-all</artifactId>
-            <version>${resilience4j.version}</version>
         </dependency>
     </dependencies>
 
