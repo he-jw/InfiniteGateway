@@ -61,7 +61,7 @@
 
 ### 1. 下载源码
 ```bash
-git clone https://github.com/your-username/InfiniteGateway.git
+git clone https://github.com/he-jw/InfiniteGateway.git
 
 cd InfiniteGateway
 ```
@@ -108,9 +108,13 @@ java -jar InfiniteGateway-Startup/target/InfiniteGateway-Startup-*.jar
 ## 📊 性能表现
 
 ### 基准测试环境
+本地电脑：MacBook Air M2 8C 24G 使用Jmeter进行压测，后端服务只起一个实例节点 InfiniteGateway-Test-User，对比 SpringCloudGateway 和 InfiniteGateway 同等条件压测结果
+### 
+SpringCloudGateway 结果：
+<img width="1439" height="287" alt="image" src="https://github.com/user-attachments/assets/21fb9849-aca7-4b8b-86a5-d2e0b7d08276" />
 
-
-### 性能指标
+InfiniteGateway结果：
+<img width="1444" height="285" alt="image" src="https://github.com/user-attachments/assets/11490b94-a40e-4803-8b4d-464659ef3e5a" />
 
 
 > *性能数据基于典型业务场景测试，实际表现因环境而异*
