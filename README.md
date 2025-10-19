@@ -108,7 +108,7 @@ java -jar InfiniteGateway-Startup/target/InfiniteGateway-Startup-*.jar
 ## 📊 性能表现
 
 ### 基准测试环境
-本地电脑：MacBook Air M2 8C 24G 使用Jmeter进行压测，后端服务只起一个实例节点 InfiniteGateway-Test-User，对比 SpringCloudGateway 和 InfiniteGateway 同等条件压测结果
+本地电脑：MacBook Air M2 8C 24G 使用Jmeter进行压测，后端服务只起一个实例节点 InfiniteGateway-Test-User，对比 SpringCloudGateway 和 InfiniteGateway 同等条件压测结果，结果显示InfiniteGateway吞吐量是SpringCloudGateway的两倍多。
 ### 
 SpringCloudGateway 结果：
 <img width="1439" height="287" alt="image" src="https://github.com/user-attachments/assets/21fb9849-aca7-4b8b-86a5-d2e0b7d08276" />
