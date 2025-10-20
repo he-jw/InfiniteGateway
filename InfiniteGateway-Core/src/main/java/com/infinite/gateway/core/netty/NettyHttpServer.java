@@ -112,57 +112,16 @@ public class NettyHttpServer implements LifeCycle {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) {
-                        /*
-                         * initChannel（同端口兼容 HTTP/1.1 与 HTTP/2 h2c，仅支持 Upgrade，不支持 Prior-Knowledge）
-                         *
-                         * 时序与职责：
-                         * 1) 统一安装 HTTP/1.1 编解码器 HttpServerCodec，用于解析首个请求并识别是否为 Upgrade: h2c
-                         * 2) 安装 HttpServerUpgradeHandler，并提供 UpgradeCodecFactory：
-                         *    - 仅当协议名为 "h2c"（Http2CodecUtil.HTTP_UPGRADE_PROTOCOL_NAME）时进行协议切换
-                         *    - Upgrade 请求需满足三要素：Connection: Upgrade、Upgrade: h2c、HTTP2-Settings（BASE64URL）
-                         *    - 升级成功：
-                         *      a. 安装 Http2FrameCodec（父通道，负责 HTTP/2 帧编解码）
-                         *      b. 安装 Http2MultiplexHandler，按 stream 创建子 Channel，并交由 H2ChildChannelInitializer 初始化
-                         *         子通道内将帧还原为 FullHttpRequest，复用 IoThreadContextHandler + NettyHttpServerHandler
-                         *    - 升级失败或未发起升级：回退到 HTTP/1.1 业务链（initHttp1Pipeline）
-                         *
-                         * 线程与资源：
-                         * - 父通道/子通道均绑定 IO EventLoop，业务处理在 bizEventExecutorGroup 上执行
-                         * - H2 子流在子通道中做 HttpObject 聚合，保持与 HTTP/1.1 完全一致的 FullHttpRequest 输入
-                         * - 你的 ThreadLocal 拒绝兜底逻辑（IoThreadContextHandler）在两条协议中均成立
-                         */
-                        // Step 1: 安装 HTTP/1.1 编解码器，用于首包解析与 Upgrade 识别
-                        //         注意：HttpServerCodec 是有状态的，每个 Channel 必须有自己的实例
                         HttpServerCodec http1 = new HttpServerCodec();
-
-                        // Step 2: 获取 HTTP/2 升级编解码工厂（单例）
-                        //         UpgradeCodecFactory 是无状态的，可以被多个 Channel 共享
-                        //         每次调用 newUpgradeCodec() 都会创建新的 Http2FrameCodec 和 Http2MultiplexHandler
                         Http2UpgradeCodecFactory upgradeFactory =
                                 Http2UpgradeCodecFactory.getInstance(
                                         config.getNetty().getMaxContentLength(),
                                         bizEventExecutorGroup,
                                         nettyProcessor);
-
-                        // Step 3: 安装 HTTP/1.1 编解码器与升级处理器
-                        //         HttpServerUpgradeHandler 会在首个请求到达时检查是否需要升级
-                        //         - 若检测到 Upgrade: h2c，调用 upgradeFactory.newUpgradeCodec() 获取升级编解码器
-                        //         - 升级成功：替换 pipeline 为 Http2FrameCodec + Http2MultiplexHandler
-                        //         - 升级失败/未升级：保持 HTTP/1.1 pipeline，继续处理后续请求
                         ch.pipeline().addLast(http1);
+                        // http2升级逻辑
                         ch.pipeline().addLast(new HttpServerUpgradeHandler(http1, upgradeFactory));
-
-                        // Step 4: 安装 HTTP/1.1 业务链（作为非升级流量的回退路径）
-                        //         包含：HttpServerExpectContinueHandler、HttpObjectAggregator、
-                        //         IoThreadContextHandler（ThreadLocal 拒绝兜底）、NettyHttpServerHandler（业务处理）
-                        //         若升级成功，HTTP/2 流量由 Http2MultiplexHandler 派发到子 Channel，
-                        //         子 Channel 有自己的 pipeline（由 H2ChildChannelInitializer 初始化），
-                        //         不会经过这里的 HTTP/1.1 业务链。
-                        //
-                        // 总结：
-                        // - HTTP/1.1 请求：HttpServerCodec → HttpServerUpgradeHandler → initHttp1Pipeline
-                        // - HTTP/1.1 Upgrade → h2c：HttpServerCodec → HttpServerUpgradeHandler → upgradeFactory
-                        //   → Http2FrameCodec + Http2MultiplexHandler → 子 Channel（H2ChildChannelInitializer）
+                        // http1.1的逻辑
                         ch.pipeline().addLast(new HttpServerExpectContinueHandler());
                         ch.pipeline().addLast(new HttpObjectAggregator(config.getNetty().getMaxContentLength()));
                         ch.pipeline().addLast(new IoThreadContextHandler());
