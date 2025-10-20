@@ -5,6 +5,7 @@ import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.config.config.netty.NettyConfig;
 import com.infinite.gateway.core.LifeCycle;
 import com.infinite.gateway.core.executor.BizExecutorManager;
+import com.infinite.gateway.core.netty.handler.IoThreadContextHandler;
 import com.infinite.gateway.core.netty.handler.NettyHttpServerHandler;
 import com.infinite.gateway.core.netty.processor.NettyProcessor;
 import io.netty.bootstrap.ServerBootstrap;
@@ -113,7 +114,8 @@ public class NettyHttpServer implements LifeCycle {
                                 // HTTP编解码器（在IO线程执行）
                                 new HttpServerCodec(),
                                 new HttpServerExpectContinueHandler(),
-                                new HttpObjectAggregator(config.getNetty().getMaxContentLength())
+                                new HttpObjectAggregator(config.getNetty().getMaxContentLength()),
+                                new IoThreadContextHandler()
                         );
                         // 业务Handler绑定到业务线程池（业务逻辑在业务线程执行）
                         ch.pipeline().addLast(
