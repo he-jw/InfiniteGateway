@@ -27,8 +27,16 @@ public final class IoThreadRequestContextHolder {
         TL.set(new RequestContext(ctx, request));
     }
 
-    public static RequestContext get() { return TL.get(); }
+    public static RequestContext get() {
+        return TL.get();
+    }
 
-    public static void clear() { TL.remove(); }
+    /**
+     * 清理 ThreadLocal，防止内存泄漏
+     * 应在 IoThreadContextHandler 的 channelRead finally 块中调用
+     */
+    public static void clear() {
+        TL.remove();
+    }
 }
 

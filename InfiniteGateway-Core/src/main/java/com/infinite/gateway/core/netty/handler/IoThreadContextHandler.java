@@ -18,6 +18,8 @@ public class IoThreadContextHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        // 异常时也要清理 ThreadLocal
+        IoThreadRequestContextHolder.clear();
         super.exceptionCaught(ctx, cause);
     }
 }
