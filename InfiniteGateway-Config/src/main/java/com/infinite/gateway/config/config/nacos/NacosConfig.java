@@ -19,6 +19,11 @@ public class NacosConfig {
     private String dataId = NACOS_DEFAULT_DATA_ID;
 
     /**
+     * nacos配置的 Data Id
+     */
+    private String dynamicThreadPoolDataId = NACOS_DEFAULT_DATA_ID;
+
+    /**
      * nacos配置的 Group
      */
     private String group = NACOS_DEFAULT_GROUP;

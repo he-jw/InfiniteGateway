@@ -5,9 +5,8 @@ import com.infinite.gateway.common.pojo.ServiceInstance;
 import com.infinite.gateway.common.util.NetUtil;
 import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.config.loader.ConfigLoader;
-import com.infinite.gateway.core.filter.FilterChainFactory;
-import com.infinite.gateway.core.manager.DynamicConfigManager;
 import com.infinite.gateway.config.service.ConfigCenterService;
+import com.infinite.gateway.core.manager.DynamicConfigManager;
 import com.infinite.gateway.core.netty.Container;
 import com.infinite.gateway.register.service.RegisterCenterService;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +45,7 @@ public class Bootstrap {
         // 1. 加载静态配置
         config = ConfigLoader.load(args);
         // 2. 初始化配置中心（动态路由管理）
+        initConfigCenter();
         initConfigCenter();
         // 3. 启动容器（核心通信组件）, 启动Netty服务端和客户端
         container = new Container(config);
@@ -132,5 +132,8 @@ public class Bootstrap {
             // 广播路由变更
             DynamicConfigManager.getInstance().onRouteListeners(newRoutes);
         });
+        configCenterService.subscribeThreadPoolParamsChange(properties -> {
+
+        });
     }
-}
+    }
