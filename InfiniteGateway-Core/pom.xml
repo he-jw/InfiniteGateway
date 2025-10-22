@@ -27,6 +27,13 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
+        <!-- 添加动态线程池依赖 -->
+        <dependency>
+            <groupId>com.infinite</groupId>
+            <artifactId>InfiniteGateway-DynamicTP</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <!--http-->
         <dependency>
             <groupId>org.asynchttpclient</groupId>

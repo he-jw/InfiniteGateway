@@ -4,7 +4,10 @@ import com.infinite.gateway.common.util.SystemUtil;
 import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.config.config.netty.NettyConfig;
 import com.infinite.gateway.core.LifeCycle;
+import com.infinite.gateway.core.executor.BizExecutorManager;
+import com.infinite.gateway.core.netty.handler.IoThreadContextHandler;
 import com.infinite.gateway.core.netty.handler.NettyHttpServerHandler;
+import com.infinite.gateway.core.netty.http2.Http2UpgradeCodecFactory;
 import com.infinite.gateway.core.netty.processor.NettyProcessor;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
@@ -12,18 +15,19 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
-import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpServerExpectContinueHandler;
+import io.netty.handler.codec.http.HttpServerUpgradeHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Netty HTTP服务器实现，负责接收客户端请求
@@ -37,6 +41,7 @@ public class NettyHttpServer implements LifeCycle {
     private ServerBootstrap serverBootstrap;
     private EventLoopGroup eventLoopGroupBoss;
     private EventLoopGroup eventLoopGroupWorker;
+    private ThreadPoolExecutor bizThreadPoolExecutor;
     private final NettyProcessor nettyProcessor;
 
     public NettyHttpServer(NettyConfig nettyConfig, NettyProcessor nettyProcessor, Config config) {
@@ -72,6 +77,18 @@ public class NettyHttpServer implements LifeCycle {
                     new DefaultThreadFactory("default-netty-server-worker-nio")
             );
         }
+
+        // 初始化业务线程池（用于执行过滤器链等业务逻辑，与IO线程分离）
+        BizExecutorManager.getInstance().init(
+                nettyConfig.getBusinessThreadNum(),
+                nettyConfig.getBusinessQueueSize()
+        );
+        this.bizThreadPoolExecutor = BizExecutorManager.getInstance().getBizThreadPoolExecutor();
+
+        log.info("NettyHttpServer initialized with boss={}, worker={}, bizThreads={}",
+                nettyConfig.getEventLoopGroupBossNum(),
+                nettyConfig.getEventLoopGroupWorkerNum(),
+                nettyConfig.getBusinessThreadNum());
     }
 
     /**
@@ -95,12 +112,21 @@ public class NettyHttpServer implements LifeCycle {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) {
-                        ch.pipeline().addLast(
-                                new HttpServerCodec(),
-                                new HttpServerExpectContinueHandler(),
-                                new HttpObjectAggregator(config.getNetty().getMaxContentLength()),
-                                new NettyHttpServerHandler(nettyProcessor)
-                        );
+                        HttpServerCodec http1 = new HttpServerCodec();
+                        Http2UpgradeCodecFactory upgradeFactory =
+                                Http2UpgradeCodecFactory.getInstance(
+                                        config.getNetty().getMaxContentLength(),
+                                        bizThreadPoolExecutor,
+                                        nettyProcessor);
+                        ch.pipeline().addLast(http1);
+                        // http2升级逻辑
+                        ch.pipeline().addLast(new HttpServerUpgradeHandler(http1, upgradeFactory));
+                        // http1.1的逻辑
+                        ch.pipeline().addLast(new HttpServerExpectContinueHandler());
+                        ch.pipeline().addLast(new HttpObjectAggregator(config.getNetty().getMaxContentLength()));
+                        ch.pipeline().addLast(new IoThreadContextHandler());
+                        // 注意：这里不再传递 EventExecutorGroup，而是在 Handler 内部手动提交任务
+                        ch.pipeline().addLast(new NettyHttpServerHandler(nettyProcessor, bizThreadPoolExecutor));
                     }
                 });
         serverBootstrap.bind().sync();
@@ -112,7 +138,12 @@ public class NettyHttpServer implements LifeCycle {
      */
     @Override
     public void shutdown() {
+        log.info("Shutting down NettyHttpServer...");
+        // 优雅关闭业务线程池
+        BizExecutorManager.getInstance().shutdown();
+        // 优雅关闭IO线程池
         eventLoopGroupBoss.shutdownGracefully();
         eventLoopGroupWorker.shutdownGracefully();
+        log.info("NettyHttpServer shutdown completed");
     }
 }

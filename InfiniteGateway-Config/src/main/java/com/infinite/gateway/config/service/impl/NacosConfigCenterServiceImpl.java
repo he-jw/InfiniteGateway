@@ -6,11 +6,13 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.alibaba.nacos.api.exception.NacosException;
+import com.infinite.gateway.common.pojo.RouteDefinition;
 import com.infinite.gateway.config.config.ConfigCenter;
 import com.infinite.gateway.config.config.nacos.NacosConfig;
-import com.infinite.gateway.common.pojo.RouteDefinition;
 import com.infinite.gateway.config.service.ConfigCenterService;
 import com.infinite.gateway.config.service.RoutesChangeListener;
+import com.infinite.gateway.dynamic.thread.pool.listener.ThreadPoolParamsChangeListener;
+import com.infinite.gateway.dynamic.thread.pool.properties.RemoteThreadPoolExecutorProperties;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,14 +69,12 @@ public class NacosConfigCenterServiceImpl implements ConfigCenterService {
         List<RouteDefinition> routes = JSON.parseObject(configJson).getJSONArray("routes").toJavaList(RouteDefinition.class);
         // 2.首次启动时，更新一次配置
         listener.onRoutesChange(routes);
-
         // 3.监听配置的更新
         configService.addListener(nacos.getDataId(), nacos.getGroup(), new Listener() {
             @Override
             public Executor getExecutor() {
                 return null;
             }
-
             @Override
             public void receiveConfigInfo(String configInfo) {
                 log.info("读取到 nacos 配置: \n{}", configInfo);
@@ -84,4 +84,25 @@ public class NacosConfigCenterServiceImpl implements ConfigCenterService {
         });
     }
 
+    @Override
+    @SneakyThrows(NacosException.class)
+    public void subscribeThreadPoolParamsChange(ThreadPoolParamsChangeListener listener) {
+        NacosConfig nacos = configCenter.getNacosConfig();
+        // 1.首次启动时，先读取配置
+        String configJson = configService.getConfig(nacos.getDynamicThreadPoolDataId(), nacos.getGroup(), nacos.getTimeout());
+
+        RemoteThreadPoolExecutorProperties remoteThreadPoolExecutorProperties = JSON.parseObject(configJson, RemoteThreadPoolExecutorProperties.class);
+        log.info("读取到 thread pool nacos 配置: \n{}", remoteThreadPoolExecutorProperties);
+        listener.onThreadPoolParamsChange(remoteThreadPoolExecutorProperties);
+        configService.addListener(nacos.getDynamicThreadPoolDataId(), nacos.getGroup(), new Listener() {
+            @Override
+            public Executor getExecutor() {
+                return null;
+            }
+            @Override
+            public void receiveConfigInfo(String configInfo) {
+                listener.onThreadPoolParamsChange(JSON.parseObject(configJson, RemoteThreadPoolExecutorProperties.class));
+            }
+        });
+    }
 }

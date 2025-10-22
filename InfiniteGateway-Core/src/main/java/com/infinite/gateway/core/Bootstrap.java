@@ -5,10 +5,11 @@ import com.infinite.gateway.common.pojo.ServiceInstance;
 import com.infinite.gateway.common.util.NetUtil;
 import com.infinite.gateway.config.config.Config;
 import com.infinite.gateway.config.loader.ConfigLoader;
-import com.infinite.gateway.core.filter.FilterChainFactory;
-import com.infinite.gateway.core.manager.DynamicConfigManager;
 import com.infinite.gateway.config.service.ConfigCenterService;
+import com.infinite.gateway.core.manager.DynamicConfigManager;
 import com.infinite.gateway.core.netty.Container;
+import com.infinite.gateway.dynamic.thread.pool.helper.ThreadPoolRefreshPropertiesHelper;
+import com.infinite.gateway.dynamic.thread.pool.registry.RejectedPolicyRegistry;
 import com.infinite.gateway.register.service.RegisterCenterService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,16 +44,24 @@ public class Bootstrap {
      * @param args 命令行参数
      */
     public void start(String[] args) {
-        // 1. 加载静态配置
+        // 1. 初始化拒绝策略注册表（加载 SPI 扩展）
+        RejectedPolicyRegistry.init();
+        log.info("RejectedPolicyRegistry initialized");
+
+        // 2. 加载静态配置
         config = ConfigLoader.load(args);
-        // 2. 初始化配置中心（动态路由管理）
+
+        // 3. 初始化配置中心（动态路由管理）
         initConfigCenter();
-        // 3. 启动容器（核心通信组件）, 启动Netty服务端和客户端
+
+        // 4. 启动容器（核心通信组件）, 启动Netty服务端和客户端
         container = new Container(config);
         container.start();
-        // 4. 初始化注册中心（服务发现）
+
+        // 5. 初始化注册中心（服务发现）
         initRegisterCenter();
-        // 5. 注册优雅停机钩子
+
+        // 6. 注册优雅停机钩子
         registerGracefullyShutdown();
     }
 
@@ -132,5 +141,8 @@ public class Bootstrap {
             // 广播路由变更
             DynamicConfigManager.getInstance().onRouteListeners(newRoutes);
         });
+        configCenterService.subscribeThreadPoolParamsChange(ThreadPoolRefreshPropertiesHelper::refresherDynamicThreadPool);
     }
+
+
 }

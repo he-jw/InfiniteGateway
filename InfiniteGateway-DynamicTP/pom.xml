@@ -9,9 +9,9 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>InfiniteGateway-Config</artifactId>
+    <artifactId>InfiniteGateway-DynamicTP</artifactId>
 
-    <description>配置中心</description>
+    <description>动态线程池</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -24,12 +24,6 @@
         <dependency>
             <groupId>com.infinite</groupId>
             <artifactId>InfiniteGateway-Common</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.infinite</groupId>
-            <artifactId>InfiniteGateway-DynamicTP</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 

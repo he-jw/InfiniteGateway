@@ -11,6 +11,7 @@ import com.infinite.gateway.core.request.GatewayRequest;
 import com.infinite.gateway.core.filter.FilterChainFactory;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.EventLoop;
 import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
  * NettyCoreProcessor 是负责在基于 Netty 的服务器中处理 HTTP 请求的组件。
  */
 @Slf4j
-public class NettyCoreProcessor implements NettyProcessor {
+public class  NettyCoreProcessor implements NettyProcessor {
 
     private static final DynamicConfigManager manager = DynamicConfigManager.getInstance();
 
@@ -74,13 +75,25 @@ public class NettyCoreProcessor implements NettyProcessor {
 
     /**
      * 发送HTTP响应并释放资源
+     *
+     * 注意：此方法可能在业务线程池中被调用（异常处理时），
+     * 因此需要确保写操作在EventLoop线程中执行
+     *
      * @param ctx Netty通道上下文
      * @param request HTTP请求对象
      * @param httpResponse HTTP响应对象
      */
     private void doWriteAndRelease(ChannelHandlerContext ctx, FullHttpRequest request, FullHttpResponse httpResponse) {
-        // 发送响应到客户端，并在发送完成后关闭连接
-        ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
+        // 获取Channel对应的EventLoop
+        EventLoop eventLoop = ctx.channel().eventLoop();
+
+        // 确保写操作在EventLoop线程中执行（线程边界控制）
+        eventLoop.execute(() -> {
+            // 发送响应到客户端，并在发送完成后关闭连接
+            ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
+        });
+
+        // 释放请求资源（可以在当前线程执行）
         if (ReferenceCountUtil.refCnt(request) > 0) {
             ReferenceCountUtil.release(request);
         }

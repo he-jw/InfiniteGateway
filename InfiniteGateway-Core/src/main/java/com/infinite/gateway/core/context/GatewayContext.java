@@ -7,6 +7,7 @@ import com.infinite.gateway.core.request.GatewayRequest;
 import com.infinite.gateway.core.response.GatewayResponse;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.EventLoop;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -105,30 +106,42 @@ public class GatewayContext {
             filterChain.doPostFilter(curFilterIndex--, this);
             if (curFilterIndex < 0) {
                 // 所有过滤器都已执行完毕，写回响应
-                this.writeBackResponse();
+                // 确保在EventLoop线程中执行写操作
+                EventLoop eventLoop = this.getNettyCtx().channel().eventLoop();
+                eventLoop.execute(this::writeBackResponse);
             }
         }
     }
 
+
     /**
      * 将处理完成的响应写回客户端
+     *
+     * 注意：此方法可能在业务线程池中被调用，因此需要确保写操作在EventLoop线程中执行
+     * 这样可以保证线程安全，避免并发写导致的问题
      */
     public void writeBackResponse() {
         // 1. 从上下文构建HTTP响应对象
         FullHttpResponse httpResponse = ResponseHelper.buildHttpResponse(this.getResponse());
-        // 2. 根据连接类型处理响应
-        if (!this.isKeepAlive()) {
-            // 短连接：发送响应后关闭连接
-            this.getNettyCtx().writeAndFlush(httpResponse)
-                    .addListener(ChannelFutureListener.CLOSE);
-        } else {
-            // 长连接：设置Keep-Alive头部并发送响应
-            httpResponse.headers().set(
-                    HttpHeaderNames.CONNECTION,  // "Connection"
-                    HttpHeaderValues.KEEP_ALIVE  // "keep-alive"
-            );
-            this.getNettyCtx().writeAndFlush(httpResponse);
-        }
 
+        // 2. 获取Channel对应的EventLoop
+        EventLoop eventLoop = this.getNettyCtx().channel().eventLoop();
+
+        // 3. 确保写操作在EventLoop线程中执行（线程边界控制）
+        eventLoop.execute(() -> {
+            // 根据连接类型处理响应
+            if (!this.isKeepAlive()) {
+                // 短连接：发送响应后关闭连接
+                this.getNettyCtx().writeAndFlush(httpResponse)
+                        .addListener(ChannelFutureListener.CLOSE);
+            } else {
+                // 长连接：设置Keep-Alive头部并发送响应
+                httpResponse.headers().set(
+                        HttpHeaderNames.CONNECTION,  // "Connection"
+                        HttpHeaderValues.KEEP_ALIVE  // "keep-alive"
+                );
+                this.getNettyCtx().writeAndFlush(httpResponse);
+            }
+        });
     }
 }

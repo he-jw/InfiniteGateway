@@ -10,6 +10,7 @@ infinite:
       nacosConfig:
         namespace: Public
         dataId: Infinite-Gateway
+        dynamicThreadPoolDataId: Infinite-Gateway-ThreadPoolParams
         group: DEFAULT_GROUP
         timeout: 5000
     registerCenter:
