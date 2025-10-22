@@ -1,5 +1,6 @@
-package com.infinite.gateway.dynamic.thread.pool;
+package com.infinite.gateway.dynamic.thread.pool.enums;
 
+import com.infinite.gateway.dynamic.thread.pool.bq.VariableLinkedBlockingQueue;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -10,9 +11,6 @@ import java.util.concurrent.*;
 @Getter
 public enum BlockingQueueTypeEnum {
 
-    /**
-     * {@link ArrayBlockingQueue}
-     */
     ARRAY_BLOCKING_QUEUE("ArrayBlockingQueue") {
         @Override
         <T> BlockingQueue<T> of(Integer capacity) {
@@ -25,9 +23,6 @@ public enum BlockingQueueTypeEnum {
         }
     },
 
-    /**
-     * {@link LinkedBlockingQueue}
-     */
     LINKED_BLOCKING_QUEUE("LinkedBlockingQueue") {
         @Override
         <T> BlockingQueue<T> of(Integer capacity) {
@@ -40,9 +35,6 @@ public enum BlockingQueueTypeEnum {
         }
     },
 
-    /**
-     * {@link LinkedBlockingDeque}
-     */
     LINKED_BLOCKING_DEQUE("LinkedBlockingDeque") {
         @Override
         <T> BlockingQueue<T> of(Integer capacity) {
@@ -55,9 +47,6 @@ public enum BlockingQueueTypeEnum {
         }
     },
 
-    /**
-     * {@link SynchronousQueue}
-     */
     SYNCHRONOUS_QUEUE("SynchronousQueue") {
         @Override
         <T> BlockingQueue<T> of(Integer capacity) {
@@ -70,9 +59,6 @@ public enum BlockingQueueTypeEnum {
         }
     },
 
-    /**
-     * {@link LinkedTransferQueue}
-     */
     LINKED_TRANSFER_QUEUE("LinkedTransferQueue") {
         @Override
         <T> BlockingQueue<T> of(Integer capacity) {
@@ -85,9 +71,6 @@ public enum BlockingQueueTypeEnum {
         }
     },
 
-    /**
-     * {@link PriorityBlockingQueue}
-     */
     PRIORITY_BLOCKING_QUEUE("PriorityBlockingQueue") {
         @Override
         <T> BlockingQueue<T> of(Integer capacity) {
@@ -97,6 +80,18 @@ public enum BlockingQueueTypeEnum {
         @Override
         <T> BlockingQueue<T> of() {
             return new PriorityBlockingQueue<>();
+        }
+    },
+
+    VARIABLE_LINKED_BLOCKING_QUEUE("VariableLinkedBlockingQueue") {
+        @Override
+        <T> BlockingQueue<T> of(Integer capacity) {
+            return new VariableLinkedBlockingQueue<>(capacity);
+        }
+
+        @Override
+        <T> BlockingQueue<T> of() {
+            return new VariableLinkedBlockingQueue<>();
         }
     };
 

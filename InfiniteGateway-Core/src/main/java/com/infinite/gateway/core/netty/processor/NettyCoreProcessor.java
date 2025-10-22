@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
  * NettyCoreProcessor 是负责在基于 Netty 的服务器中处理 HTTP 请求的组件。
  */
 @Slf4j
-public class NettyCoreProcessor implements NettyProcessor {
+public class  NettyCoreProcessor implements NettyProcessor {
 
     private static final DynamicConfigManager manager = DynamicConfigManager.getInstance();
 

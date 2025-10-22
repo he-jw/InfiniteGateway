@@ -21,7 +21,7 @@ public class NacosConfig {
     /**
      * nacos配置的 Data Id
      */
-    private String dynamicThreadPoolDataId = NACOS_DEFAULT_DATA_ID;
+    private String dynamicThreadPoolDataId = NACOS_DEFAULT_DYNAMIC_THREAD_POOL_DATA_ID;
 
     /**
      * nacos配置的 Group
@@ -32,7 +32,4 @@ public class NacosConfig {
      * nacos连接超时时长，单位ms
      */
     private int timeout = NACOS_DEFAULT_TIMEOUT;
-
-    
-
 }

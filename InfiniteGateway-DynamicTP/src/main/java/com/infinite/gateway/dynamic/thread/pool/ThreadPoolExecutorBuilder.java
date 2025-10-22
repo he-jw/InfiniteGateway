@@ -1,6 +1,7 @@
 package com.infinite.gateway.dynamic.thread.pool;
 
 import cn.hutool.core.lang.Assert;
+import com.infinite.gateway.dynamic.thread.pool.enums.BlockingQueueTypeEnum;
 
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -68,8 +69,8 @@ public class ThreadPoolExecutorBuilder {
     /**
      * 设置构建线程池为动态线程池
      */
-    public ThreadPoolExecutorBuilder dynamicPool() {
-        this.dynamicPool = true;
+    public ThreadPoolExecutorBuilder dynamicPool(boolean b) {
+        this.dynamicPool = b;
         return this;
     }
 

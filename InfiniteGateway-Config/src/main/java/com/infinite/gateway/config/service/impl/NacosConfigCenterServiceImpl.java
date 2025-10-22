@@ -6,14 +6,13 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.alibaba.nacos.api.exception.NacosException;
+import com.infinite.gateway.common.pojo.RouteDefinition;
 import com.infinite.gateway.config.config.ConfigCenter;
 import com.infinite.gateway.config.config.nacos.NacosConfig;
-import com.infinite.gateway.common.pojo.RouteDefinition;
 import com.infinite.gateway.config.service.ConfigCenterService;
 import com.infinite.gateway.config.service.RoutesChangeListener;
 import com.infinite.gateway.dynamic.thread.pool.listener.ThreadPoolParamsChangeListener;
 import com.infinite.gateway.dynamic.thread.pool.properties.RemoteThreadPoolExecutorProperties;
-import com.infinite.gateway.dynamic.thread.pool.properties.ThreadPoolExecutorProperties;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,74 +90,7 @@ public class NacosConfigCenterServiceImpl implements ConfigCenterService {
         NacosConfig nacos = configCenter.getNacosConfig();
         // 1.首次启动时，先读取配置
         String configJson = configService.getConfig(nacos.getDynamicThreadPoolDataId(), nacos.getGroup(), nacos.getTimeout());
-        //{
-        //  "enable": true,
-        //  "nacos": {
-        //    "dataId": "onethread-config",
-        //    "group": "DEFAULT_GROUP"
-        //  },
-        //  "apollo": {
-        //    "namespace": "application"
-        //  },
-        //  "configFileType": "JSON",
-        //  "web": {
-        //    "corePoolSize": 10,
-        //    "maximumPoolSize": 200,
-        //    "keepAliveTime": 60,
-        //    "notify": {
-        //      "receives": "user1@example.com,user2@example.com"
-        //    }
-        //  },
-        //  "notifyPlatforms": {
-        //    "platform": "DING",
-        //    "url": "https://oapi.dingtalk.com/robot/send?access_token=xxxxx"
-        //  },
-        //  "monitor": {
-        //    "enable": true,
-        //    "collectType": "micrometer",
-        //    "collectInterval": 10
-        //  },
-        //  "executors": [
-        //    {
-        //      "threadPoolId": "order-thread-pool",
-        //      "corePoolSize": 20,
-        //      "maximumPoolSize": 50,
-        //      "queueCapacity": 1000,
-        //      "workQueue": "LinkedBlockingQueue",
-        //      "rejectedHandler": "AbortPolicy",
-        //      "keepAliveTime": 60,
-        //      "allowCoreThreadTimeOut": false,
-        //      "notify": {
-        //        "receives": "admin@example.com",
-        //        "interval": 5
-        //      },
-        //      "alarm": {
-        //        "enable": true,
-        //        "queueThreshold": 80,
-        //        "activeThreshold": 80
-        //      }
-        //    },
-        //    {
-        //      "threadPoolId": "payment-thread-pool",
-        //      "corePoolSize": 10,
-        //      "maximumPoolSize": 30,
-        //      "queueCapacity": 500,
-        //      "workQueue": "ArrayBlockingQueue",
-        //      "rejectedHandler": "CallerRunsPolicy",
-        //      "keepAliveTime": 120,
-        //      "allowCoreThreadTimeOut": true,
-        //      "notify": {
-        //        "receives": "ops@example.com",
-        //        "interval": 10
-        //      },
-        //      "alarm": {
-        //        "enable": true,
-        //        "queueThreshold": 70,
-        //        "activeThreshold": 75
-        //      }
-        //    }
-        //  ]
-        //}
+
         RemoteThreadPoolExecutorProperties remoteThreadPoolExecutorProperties = JSON.parseObject(configJson, RemoteThreadPoolExecutorProperties.class);
         log.info("读取到 thread pool nacos 配置: \n{}", remoteThreadPoolExecutorProperties);
         listener.onThreadPoolParamsChange(remoteThreadPoolExecutorProperties);
@@ -169,8 +101,7 @@ public class NacosConfigCenterServiceImpl implements ConfigCenterService {
             }
             @Override
             public void receiveConfigInfo(String configInfo) {
-                ThreadPoolExecutorProperties threadPoolExecutorProperties = JSON.parseObject(configJson, ThreadPoolExecutorProperties.class);
-                listener.onThreadPoolParamsChange(remoteThreadPoolExecutorProperties);
+                listener.onThreadPoolParamsChange(JSON.parseObject(configJson, RemoteThreadPoolExecutorProperties.class));
             }
         });
     }

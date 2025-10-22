@@ -7,7 +7,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
-import io.netty.util.concurrent.EventExecutorGroup;
+
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * HTTP/2 子流 Channel 初始化器
@@ -16,14 +17,14 @@ import io.netty.util.concurrent.EventExecutorGroup;
 public class H2ChildChannelInitializer extends ChannelInitializer<Channel> {
 
     private final int maxContentLength;
-    private final EventExecutorGroup bizGroup;
+    private final ThreadPoolExecutor bizThreadPoolExecutor;
     private final NettyProcessor nettyProcessor;
 
     public H2ChildChannelInitializer(int maxContentLength,
-                                     EventExecutorGroup bizGroup,
+                                     ThreadPoolExecutor bizThreadPoolExecutor,
                                      NettyProcessor nettyProcessor) {
         this.maxContentLength = maxContentLength;
-        this.bizGroup = bizGroup;
+        this.bizThreadPoolExecutor = bizThreadPoolExecutor;
         this.nettyProcessor = nettyProcessor;
     }
 
@@ -39,8 +40,8 @@ public class H2ChildChannelInitializer extends ChannelInitializer<Channel> {
         // 在 IO 线程中将 ctx + FullHttpRequest 存入 ThreadLocal，用于拒绝兜底
         ch.pipeline().addLast(new IoThreadContextHandler());
 
-        // 绑定到业务线程池，执行网关业务逻辑（路由、过滤器、转发等）
-        ch.pipeline().addLast(bizGroup, new NettyHttpServerHandler(nettyProcessor));
+        // 业务处理器（内部手动提交任务到业务线程池）
+        ch.pipeline().addLast(new NettyHttpServerHandler(nettyProcessor, bizThreadPoolExecutor));
     }
 }
 

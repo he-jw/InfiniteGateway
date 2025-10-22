@@ -7,8 +7,9 @@ import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2ServerUpgradeCodec;
-import io.netty.util.concurrent.EventExecutorGroup;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * HTTP/2 升级编解码工厂（单例）
@@ -31,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Http2UpgradeCodecFactory implements HttpServerUpgradeHandler.UpgradeCodecFactory {
 
     private final int maxContentLength;
-    private final EventExecutorGroup bizEventExecutorGroup;
+    private final ThreadPoolExecutor bizThreadPoolExecutor;
     private final NettyProcessor nettyProcessor;
 
     /**
@@ -40,10 +41,10 @@ public class Http2UpgradeCodecFactory implements HttpServerUpgradeHandler.Upgrad
     private static Http2UpgradeCodecFactory instance;
 
     private Http2UpgradeCodecFactory(int maxContentLength,
-                                     EventExecutorGroup bizEventExecutorGroup,
+                                     ThreadPoolExecutor bizThreadPoolExecutor,
                                      NettyProcessor nettyProcessor) {
         this.maxContentLength = maxContentLength;
-        this.bizEventExecutorGroup = bizEventExecutorGroup;
+        this.bizThreadPoolExecutor = bizThreadPoolExecutor;
         this.nettyProcessor = nettyProcessor;
     }
 
@@ -51,12 +52,12 @@ public class Http2UpgradeCodecFactory implements HttpServerUpgradeHandler.Upgrad
      * 获取单例实例（双检锁）
      */
     public static Http2UpgradeCodecFactory getInstance(int maxContentLength,
-                                                       EventExecutorGroup bizEventExecutorGroup,
+                                                       ThreadPoolExecutor bizThreadPoolExecutor,
                                                        NettyProcessor nettyProcessor) {
         if (instance == null) {
             synchronized (Http2UpgradeCodecFactory.class) {
                 if (instance == null) {
-                    instance = new Http2UpgradeCodecFactory(maxContentLength, bizEventExecutorGroup, nettyProcessor);
+                    instance = new Http2UpgradeCodecFactory(maxContentLength, bizThreadPoolExecutor, nettyProcessor);
                     log.info("Http2UpgradeCodecFactory singleton initialized");
                 }
             }
@@ -74,7 +75,7 @@ public class Http2UpgradeCodecFactory implements HttpServerUpgradeHandler.Upgrad
             Http2MultiplexHandler multiplexHandler = new Http2MultiplexHandler(
                     new H2ChildChannelInitializer(
                             maxContentLength,
-                            bizEventExecutorGroup,
+                            bizThreadPoolExecutor,
                             nettyProcessor));
             // 返回升级编解码器
             return new Http2ServerUpgradeCodec(http2FrameCodec, multiplexHandler);

@@ -23,11 +23,11 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpServerExpectContinueHandler;
 import io.netty.handler.codec.http.HttpServerUpgradeHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
-import io.netty.util.concurrent.EventExecutorGroup;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Netty HTTP服务器实现，负责接收客户端请求
@@ -41,7 +41,7 @@ public class NettyHttpServer implements LifeCycle {
     private ServerBootstrap serverBootstrap;
     private EventLoopGroup eventLoopGroupBoss;
     private EventLoopGroup eventLoopGroupWorker;
-    private EventExecutorGroup bizEventExecutorGroup;
+    private ThreadPoolExecutor bizThreadPoolExecutor;
     private final NettyProcessor nettyProcessor;
 
     public NettyHttpServer(NettyConfig nettyConfig, NettyProcessor nettyProcessor, Config config) {
@@ -83,7 +83,7 @@ public class NettyHttpServer implements LifeCycle {
                 nettyConfig.getBusinessThreadNum(),
                 nettyConfig.getBusinessQueueSize()
         );
-        this.bizEventExecutorGroup = BizExecutorManager.getInstance().getBizEventExecutorGroup();
+        this.bizThreadPoolExecutor = BizExecutorManager.getInstance().getBizThreadPoolExecutor();
 
         log.info("NettyHttpServer initialized with boss={}, worker={}, bizThreads={}",
                 nettyConfig.getEventLoopGroupBossNum(),
@@ -116,7 +116,7 @@ public class NettyHttpServer implements LifeCycle {
                         Http2UpgradeCodecFactory upgradeFactory =
                                 Http2UpgradeCodecFactory.getInstance(
                                         config.getNetty().getMaxContentLength(),
-                                        bizEventExecutorGroup,
+                                        bizThreadPoolExecutor,
                                         nettyProcessor);
                         ch.pipeline().addLast(http1);
                         // http2升级逻辑
@@ -125,7 +125,8 @@ public class NettyHttpServer implements LifeCycle {
                         ch.pipeline().addLast(new HttpServerExpectContinueHandler());
                         ch.pipeline().addLast(new HttpObjectAggregator(config.getNetty().getMaxContentLength()));
                         ch.pipeline().addLast(new IoThreadContextHandler());
-                        ch.pipeline().addLast(bizEventExecutorGroup, new NettyHttpServerHandler(nettyProcessor));
+                        // 注意：这里不再传递 EventExecutorGroup，而是在 Handler 内部手动提交任务
+                        ch.pipeline().addLast(new NettyHttpServerHandler(nettyProcessor, bizThreadPoolExecutor));
                     }
                 });
         serverBootstrap.bind().sync();

@@ -8,12 +8,11 @@ import com.infinite.gateway.core.filter.Filter;
 import com.infinite.gateway.core.filter.route.resilience.Resilience;
 import com.infinite.gateway.core.helper.ResponseHelper;
 import com.infinite.gateway.core.http.HttpClient;
-import io.netty.util.concurrent.EventExecutorGroup;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.Response;
 
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Supplier;
 
 import static com.infinite.gateway.common.constant.FilterConstant.ROUTE_FILTER_NAME;
@@ -52,31 +51,23 @@ public class RouterFilter implements Filter {
      */
     private void handleResponseAsync(GatewayContext context, CompletionStage<Response> responseStage) {
         // 获取业务线程池（用于执行后续过滤器链等业务逻辑）
-        EventExecutorGroup bizExecutor = BizExecutorManager.getInstance().getBizEventExecutorGroup();
-        // 将EventExecutorGroup转换为Executor（取next()获取一个EventExecutor）
-        Executor executor = bizExecutor.next();
-
+        ThreadPoolExecutor bizExecutor = BizExecutorManager.getInstance().getBizThreadPoolExecutor();
         responseStage.whenCompleteAsync((response, throwable) -> {
-            try {
-                if (throwable != null) {
-                    context.setThrowable(throwable);
-                    throw new RuntimeException(throwable);
-                }
-                // 构建网关响应（业务逻辑，在业务线程执行）
-                context.setResponse(ResponseHelper.buildGatewayResponse(response));
-                // 继续执行过滤器链（业务逻辑，在业务线程执行）
-                context.doFilter();
-            } catch (Exception e) {
-                context.setResponse(ResponseHelper.buildGatewayResponse(ResponseCode.INTERNAL_ERROR));
-                // writeBackResponse内部会切回EventLoop执行IO写操作
-                context.writeBackResponse();
+            if (throwable != null) {
+                context.setThrowable(throwable);
+                throw new RuntimeException(throwable);  // 抛出异常，让 exceptionallyAsync 处理
             }
-        }, executor).exceptionallyAsync(throwable -> {
+            // 构建网关响应
+            context.setResponse(ResponseHelper.buildGatewayResponse(response));
+            // 继续执行过滤器链
+            context.doFilter();
+        }, bizExecutor).exceptionallyAsync(throwable -> {
+            // 统一处理所有异常
+            context.setThrowable(throwable);
             context.setResponse(ResponseHelper.buildGatewayResponse(ResponseCode.INTERNAL_ERROR));
-            // writeBackResponse内部会切回EventLoop执行IO写操作
             context.writeBackResponse();
             return null;
-        }, executor);
+        }, bizExecutor);
     }
 
     private Supplier<CompletionStage<Response>> buildRouteSupplier(GatewayContext context) {
