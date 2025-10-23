@@ -61,10 +61,6 @@ public class ThreadPoolExecutorBuilder {
 
     private AtomicLong threadNum = new AtomicLong(0);
 
-    /**
-     * 最大等待时间
-     */
-    private long awaitTerminationMillis = 0L;
 
     /**
      * 设置构建线程池为动态线程池
@@ -133,9 +129,7 @@ public class ThreadPoolExecutorBuilder {
         Assert.notBlank(namePrefix, "The name prefix cannot be blank.");
         this.threadFactory = r -> {
             Thread thread = new Thread(r);
-            if (threadNum != null) {
-                thread.setName(namePrefix + threadNum.incrementAndGet());
-            }
+            thread.setName(namePrefix + "-" + threadNum.incrementAndGet());
             return thread;
         };
         return this;
@@ -171,15 +165,6 @@ public class ThreadPoolExecutorBuilder {
         return this;
     }
 
-    /**
-     * 设置最大等待时间
-     *
-     * @param awaitTerminationMillis 最大等待时间
-     */
-    public ThreadPoolExecutorBuilder awaitTerminationMillis(long awaitTerminationMillis) {
-        this.awaitTerminationMillis = awaitTerminationMillis;
-        return this;
-    }
 
     /**
      * 创建线程池构建器

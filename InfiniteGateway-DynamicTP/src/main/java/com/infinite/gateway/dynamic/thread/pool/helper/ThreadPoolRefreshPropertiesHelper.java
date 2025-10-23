@@ -22,6 +22,7 @@ import static com.infinite.gateway.dynamic.thread.pool.constants.Constants.CHANG
 @Slf4j
 public class ThreadPoolRefreshPropertiesHelper {
 
+
     public static void refresherDynamicThreadPool(RemoteThreadPoolExecutorProperties refresherProperties) {
         if (CollUtil.isEmpty(refresherProperties.getExecutors())) {
             return;
