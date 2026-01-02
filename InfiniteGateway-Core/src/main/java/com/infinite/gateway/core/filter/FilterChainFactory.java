@@ -50,7 +50,7 @@ public class FilterChainFactory {
         filterChainMap.computeIfAbsent(serviceName, k -> {
             FilterChain chain = new FilterChain();
             // 1.添加固定的过滤器
-            addFilterIfPresent(chain, CORS_FILTER_NAME);         // 跨域处理
+            //addFilterIfPresent(chain, CORS_FILTER_NAME);         // 跨域处理
             //addFilterIfPresent(chain, FLOW_FILTER_NAME);        // 流量控制
             addFilterIfPresent(chain, GRAY_FILTER_NAME);        // 灰度发布
             addFilterIfPresent(chain, LOAD_BALANCE_FILTER_NAME); // 负载均衡

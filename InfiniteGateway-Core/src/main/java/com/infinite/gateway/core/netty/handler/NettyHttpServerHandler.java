@@ -22,7 +22,6 @@ public class NettyHttpServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         FullHttpRequest request = (FullHttpRequest) msg;
-
         // 手动提交任务到业务线程池
         // 注意：IoThreadContextHandler 已经在 IO 线程中将 ctx 和 request 存入 ThreadLocal
         // 拒绝策略会从 ThreadLocal 中获取这些信息

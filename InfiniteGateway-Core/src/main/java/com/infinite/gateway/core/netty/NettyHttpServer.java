@@ -125,7 +125,6 @@ public class NettyHttpServer implements LifeCycle {
                         ch.pipeline().addLast(new HttpServerExpectContinueHandler());
                         ch.pipeline().addLast(new HttpObjectAggregator(config.getNetty().getMaxContentLength()));
                         ch.pipeline().addLast(new IoThreadContextHandler());
-                        // 注意：这里不再传递 EventExecutorGroup，而是在 Handler 内部手动提交任务
                         ch.pipeline().addLast(new NettyHttpServerHandler(nettyProcessor, bizThreadPoolExecutor));
                     }
                 });

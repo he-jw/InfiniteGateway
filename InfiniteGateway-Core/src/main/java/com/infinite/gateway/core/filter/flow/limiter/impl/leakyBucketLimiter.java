@@ -25,6 +25,7 @@ public class leakyBucketLimiter implements FlowLimiter {
         eventLoop.scheduleAtFixedRate(() -> {
             GatewayContext context = taskQueue.poll();
             if (context != null) {
+                // 有一个线程每隔一定的时间去把对头的元素重新放到业务线程池中去执行。
                 context.getNettyCtx().channel().eventLoop().execute(context::doFilter);
             }
         }, 0,interval, TimeUnit.MILLISECONDS);
