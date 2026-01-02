@@ -1,58 +1,16 @@
-# 🚀 InfiniteGateway
+# InfiniteGateway
 
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Java](https://img.shields.io/badge/Java-17+-green.svg)](https://openjdk.java.net/)
 [![Netty](https://img.shields.io/badge/Netty-4.x-red.svg)](https://netty.io/)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 
-> **高性能、可扩展的API网关** - 为微服务架构量身定制的流量入口解决方案
+基于 Netty 与动态线程池技术，自主设计并实现了一个高性能、全异步的微服务 API 网关。该架构通过多 Reactor 模型支撑高并发网络通信，利用动态线程池保障系统弹性与资源利用率，并借助 AsyncHttpClient 完成全链路无阻塞处理。其核心是可插拔的动态过滤器链，借此提供了包括智能路由、灰度分流、精准流量治理、负载均衡及熔断降级在内的一站式流量管理能力，赋能微服务体系稳定高效运行。
 
-## 核心特性
-- **基于 Netty NIO** - 充分利用异步非阻塞I/O，支持高并发处理
-- **全异步处理链路** - 使用 AsyncHttpClient 实现请求转发全链路异步化
-- **智能线程模型** - 自适应 Epoll/NIO 模型，Linux 下自动启用高性能 Epoll
-- **动态过滤器链** - 支持运行时动态组装和调整过滤器执行顺序
-- **多阶段处理** - Pre/Post 双阶段过滤器设计，精确控制请求处理流程
-- **SPI 扩展机制** - 基于 Java SPI 的插件化架构，轻松扩展自定义功能
-- **热插拔支持** - 无需重启即可加载和卸载过滤器插件
+## 基于多 Reactor 多线程架构设计请求交互流程
+<img width="699" height="820" alt="image" src="https://github.com/user-attachments/assets/faead986-1be5-4bd3-8d8e-4fc4120b49fe" />
 
-## 🏗️ 架构设计
-
-```
-┌─────────────────┐    ┌──────────────────────────────────────────┐
-│   Client        │    │              InfiniteGateway             │
-│                 │    │                                          │
-│  ┌─────────────┐│    │ ┌─────────┐  ┌─────────────────────────┐ │
-│  │   Request   ││───▶│ │  Netty  │  │    Filter Chain         │ │
-│  └─────────────┘│    │ │ Server  │  │                         │ │
-│                 │    │ └─────────┘  │ ┌─────┐ ┌─────┐ ┌─────┐ │ │
-│  ┌─────────────┐│    │              │ │CORS │ │Auth │ │Rate │ │ │
-│  │  Response   ││◀───│              │ │     │ │     │ │Limit│ │ │
-│  └─────────────┘│    │              │ └─────┘ └─────┘ └─────┘ │ │
-└─────────────────┘    │              │ ┌─────┐ ┌─────┐ ┌─────┐ │ │
-                       │              │ │Load │ │Gray │ │Route│ │ │
-┌─────────────────┐    │              │ │Bal  │ │     │ │     │ │ │
-│   Config        │    │              │ └─────┘ └─────┘ └─────┘ │ │
-│   Center        │◀──▶│              └─────────────────────────┘ │
-│  (Nacos/ZK)     │    │                                          │
-└─────────────────┘    │ ┌──────────────────────────────────────┐ │
-                       │ │         AsyncHttpClient              │ │
-┌─────────────────┐    │ │                                      │ │
-│   Registry      │    │ └──────────────────┬───────────────────┘ │
-│   Center        │◀──▶│                    │                     │
-│  (Nacos/ZK)     │    └────────────────────┼─────────────────────┘
-└─────────────────┘                         │
-                                            ▼
-                       ┌─────────────────────────────────────────┐
-                       │            Backend Services             │
-                       │                                         │
-                       │ ┌─────────┐ ┌─────────┐ ┌─────────┐     │
-                       │ │Service A│ │Service B│ │Service C│     │
-                       │ └─────────┘ └─────────┘ └─────────┘     │
-                       └─────────────────────────────────────────┘
-```
-
-## 🚀 快速开始
+## 快速开始
 
 ### 环境要求
 - Java 17+
@@ -66,7 +24,9 @@ git clone https://github.com/he-jw/InfiniteGateway.git
 cd InfiniteGateway
 ```
 
-### 2. Nacos 配置中心路由规则示例
+### 2. Nacos 配置中心规则示例
+
+#### 2.1. 路由配置
 ```json
 {
     "routes": [
@@ -85,6 +45,33 @@ cd InfiniteGateway
             ]
         }
     ]
+}
+```
+#### 2.2. 动态线程池配置
+```json
+{
+  "enable": true,
+  "executors": [
+    {
+      "threadPoolId": "gateway-biz-executor",
+      "corePoolSize": 8,
+      "maximumPoolSize": 10,
+      "queueCapacity": 1000,
+      "workQueue": "VARIABLE_LINKED_BLOCKING_QUEUE",
+      "rejectedHandler": "GatewayJdkPolicy",
+      "keepAliveTime": 60,
+      "allowCoreThreadTimeOut": false,
+      "notify": {
+        "receives": "admin@example.com",
+        "interval": 5
+      },
+      "alarm": {
+        "enable": true,
+        "queueThreshold": 80,
+        "activeThreshold": 80
+      }
+    }
+  ]
 }
 ```
 
@@ -123,7 +110,6 @@ InfiniteGateway结果：
 
 ### 自定义过滤器
 ```java
-@Component
 public class CustomAuthFilter implements Filter {
     
     @Override
