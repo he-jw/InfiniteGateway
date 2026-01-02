@@ -140,13 +140,13 @@ public class RouteDefinition {
 
         private boolean enabled = true; // 是否开启弹性配置
 
-        private boolean retryEnabled = true; // 是否开启重试
+        private boolean retryEnabled = false; // 是否开启重试
         private boolean circuitBreakerEnabled = true; // 是否开启熔断
         private boolean fallbackEnabled = true; // 是否开启降级
         private boolean bulkheadEnabled = true; // 是否开启信号量隔离
-        private boolean threadPoolBulkheadEnabled = true; // 是否开启线程池隔离
+        private boolean threadPoolBulkheadEnabled = false; // 是否开启线程池隔离
 
-        private List<ResilienceEnum> order = Arrays.asList(RETRY, THREAD_POOL_BULKHEAD, BREAKER, BULKHEAD, FALLBACK);
+        private List<ResilienceEnum> order = Arrays.asList(BREAKER, BULKHEAD, RETRY, FALLBACK);
 
         // Retry
         private int maxAttempts = 2; // 重试次数
