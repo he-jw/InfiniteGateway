@@ -65,7 +65,7 @@ public class RejectedPolicyRegistry {
     }
 
     /**
-     * 通过 SPI 加载扩展策略
+     * 通过 SPI 加载扩展的拒绝策略
      */
     private static void loadSpiPolicies() {
         ServiceLoader<RejectedPolicyProvider> serviceLoader = ServiceLoader.load(RejectedPolicyProvider.class);

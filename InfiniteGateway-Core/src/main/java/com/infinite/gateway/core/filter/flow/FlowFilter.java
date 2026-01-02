@@ -3,6 +3,7 @@ package com.infinite.gateway.core.filter.flow;
 import cn.hutool.json.JSONUtil;
 import com.infinite.gateway.common.pojo.RouteDefinition;
 import com.infinite.gateway.core.context.GatewayContext;
+import com.infinite.gateway.core.executor.BizExecutorManager;
 import com.infinite.gateway.core.filter.Filter;
 import com.infinite.gateway.core.filter.flow.limiter.FlowLimiter;
 import com.infinite.gateway.core.filter.flow.limiter.impl.SlidingWindowLimiter;
@@ -47,8 +48,7 @@ public class FlowFilter implements Filter {
             case LEAKY_BUCKET:
                 return new leakyBucketLimiter(
                         flowFilterConfig.getCapacity(),
-                        flowFilterConfig.getRate(),
-                        context.getNettyCtx().channel().eventLoop());
+                        flowFilterConfig.getRate());
             case SLIDING_WINDOW:
                 return new SlidingWindowLimiter(flowFilterConfig.getCapacity());
             default:

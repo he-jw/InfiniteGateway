@@ -4,7 +4,7 @@ infinite:
     port: 10011
     evn: dev
     configCenter:
-      address: 127.0.0.1:8848
+      address: 175.178.214.251:8848
       enabled: true
       type: nacos
       nacosConfig:
@@ -15,7 +15,7 @@ infinite:
         timeout: 5000
     registerCenter:
       type: nacos
-      address: 127.0.0.1:8848
+      address: 175.178.214.251:8848
       nacosConfig:
         namespace: Public
         dataId: Infinite-Gateway

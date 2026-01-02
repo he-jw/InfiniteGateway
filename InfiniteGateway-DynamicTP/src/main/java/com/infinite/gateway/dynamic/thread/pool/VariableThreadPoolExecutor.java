@@ -22,9 +22,4 @@ public class VariableThreadPoolExecutor extends ThreadPoolExecutor {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
         this.threadPoolId = threadPoolId;
     }
-
-
-
-
-
 }
